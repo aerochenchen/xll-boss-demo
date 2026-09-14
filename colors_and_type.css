@@ -1,0 +1,79 @@
+/* @light-only */
+/* Source: structured-spec */
+:root {
+  /* color - semantic */
+  --background: #F5F7FA;
+  --foreground: #1F2937;
+  --card: #FFFFFF;
+  --card-foreground: #1F2937;
+  --primary: #1E3A5F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #0D9488;
+  --secondary-foreground: #FFFFFF;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --accent: #F1F5F9;
+  --accent-foreground: #1E3A5F;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #1E3A5F;
+
+  /* color - brand */
+  --color-navy: #1E3A5F;
+  --color-navy-dark: #142A47;
+  --color-navy-soft: #E6EEF7;
+  --color-teal: #0D9488;
+  --color-teal-soft: #CCFBF1;
+  --color-paper: #F5F7FA;
+  --color-ink: #1F2937;
+  --color-danger: #DC2626;
+  --color-warn: #D97706;
+  --color-ok: #059669;
+  --color-hot-bg: #FEF2F2;
+  --color-ok-bg: #ECFDF5;
+  --color-warn-bg: #FFFBEB;
+
+  /* radius */
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-lg: 28px;
+
+  /* shadow */
+  --shadow-sm: 0 1px 3px rgba(30, 58, 95, 0.06), 0 1px 2px rgba(30, 58, 95, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(30, 58, 95, 0.08), 0 2px 4px -2px rgba(30, 58, 95, 0.04);
+
+  /* typography */
+  --font-sans: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --text-scale: 1.3;
+
+  /* portable aliases */
+  --color-primary: var(--color-navy);
+  --color-secondary: var(--color-teal);
+  --color-background: var(--color-paper);
+  --color-foreground: var(--color-ink);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-destructive: var(--color-danger);
+  --color-warning: var(--color-warn);
+  --color-success: var(--color-ok);
+
+  /* backward compatibility aliases for existing demo pages */
+  --navy: var(--color-navy);
+  --navy-dark: var(--color-navy-dark);
+  --navy-soft: var(--color-navy-soft);
+  --teal: var(--color-teal);
+  --teal-soft: var(--color-teal-soft);
+  --paper: var(--color-paper);
+  --ink: var(--color-ink);
+  --danger: var(--color-danger);
+  --warn: var(--color-warn);
+  --ok: var(--color-ok);
+  --hot-bg: var(--color-hot-bg);
+  --ok-bg: var(--color-ok-bg);
+  --warn-bg: var(--color-warn-bg);
+  --s: var(--text-scale);
+}
