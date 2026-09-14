@@ -982,7 +982,7 @@ function refreshFromStore() {
       '<div class="meta">' + esc(o.stepShort) + ' · ' + esc(o.owner) + '</div></div></div>';
   });
   document.getElementById('orderList').innerHTML = listHtml;
-  setOrderFilter(orderFilter || 'all');
+  setOrderFilter(typeof orderFilter !== 'undefined' ? orderFilter : 'all');
   document.querySelectorAll('#stuckList .admin').forEach(bindAdmin);
   if (track[track.length - 1] === 'detail') renderDetail(currentOrderId);
 }
