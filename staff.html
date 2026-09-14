@@ -281,9 +281,13 @@
   <div class="top">
     <div class="row">
       <div class="t" id="hdTitle">员工端</div>
-      <a class="link-boss" href="./index.html">老板端</a>
+      <div class="lang" style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;font-size:0.625em;margin-right:6px;background:#fff">
+        <span class="on" id="lzh" onclick="setLang('zh')" role="button" tabindex="0" style="padding:6px 8px;cursor:pointer">中文</span>
+        <span id="lru" onclick="setLang('ru')" role="button" tabindex="0" style="padding:6px 8px;cursor:pointer">Рус</span>
+      </div>
+      <a class="link-boss" href="./index.html" id="linkBoss">老板端</a>
     </div>
-    <div class="roles" id="roleBar" role="tablist" aria-label="切换角色"></div>
+    <div class="roles" id="roleBar" role="tablist" aria-label="roles"></div>
   </div>
 
   <div class="body">
@@ -295,22 +299,30 @@
   </div>
 
   <div class="nav" id="nav">
-    <button type="button" class="on" data-t="todo" onclick="tab('todo')">待办</button>
-    <button type="button" data-t="mine" onclick="tab('mine')">我的单</button>
-    <button type="button" data-t="check" onclick="tab('check')">打卡</button>
-    <button type="button" data-t="msg" onclick="tab('msg')">消息</button>
+    <button type="button" class="on" data-t="todo" onclick="tab('todo')" data-i="tabTodo">待办</button>
+    <button type="button" data-t="mine" onclick="tab('mine')" data-i="tabMine">我的单</button>
+    <button type="button" data-t="check" onclick="tab('check')" data-i="tabCheck">打卡</button>
+    <button type="button" data-t="msg" onclick="tab('msg')" data-i="tabMsg">消息</button>
   </div>
   <div class="toast" id="toast"></div>
 </div>
 
+<script src="./i18n.js"></script>
 <script src="./store.js"></script>
 <script>
-var ROLES = [
-  { id: 'Nina', label: 'Nina · 业务' },
-  { id: '张青昊', label: '张青昊 · 业务' },
-  { id: '波塔', label: '波塔 · 内勤' },
-  { id: '那尔', label: '那尔 · 外勤' }
-];
+var lang = (function () { try { return localStorage.getItem('xll_lang') || 'zh'; } catch (e) { return 'zh'; } })();
+function t(key, vars) { return XLLI18N.t(lang, key, vars); }
+function tr(s) { return XLLI18N.tr(lang, s); }
+
+function roleDefs() {
+  return [
+    { id: 'Nina', labelKey: 'roleNina' },
+    { id: '张青昊', labelKey: 'roleZhang' },
+    { id: '波塔', labelKey: 'roleBota' },
+    { id: '那尔', labelKey: 'roleNar' }
+  ];
+}
+
 var role = 'Nina';
 var tabName = 'todo';
 var detailId = null;
@@ -323,6 +335,38 @@ function showToast(msg) {
   el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2000);
+}
+
+function paintChrome() {
+  document.getElementById('lzh').classList.toggle('on', lang === 'zh');
+  document.getElementById('lru').classList.toggle('on', lang === 'ru');
+  document.getElementById('lzh').style.background = lang === 'zh' ? 'var(--navy-soft)' : '#fff';
+  document.getElementById('lzh').style.color = lang === 'zh' ? 'var(--navy)' : 'var(--muted-foreground)';
+  document.getElementById('lru').style.background = lang === 'ru' ? 'var(--navy-soft)' : '#fff';
+  document.getElementById('lru').style.color = lang === 'ru' ? 'var(--navy)' : 'var(--muted-foreground)';
+  document.getElementById('linkBoss').textContent = t('linkBoss');
+  document.querySelectorAll('#nav [data-i]').forEach(function (el) {
+    el.textContent = t(el.getAttribute('data-i'));
+  });
+  var bar = document.getElementById('roleBar');
+  bar.innerHTML = '';
+  roleDefs().forEach(function (r) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.role = r.id;
+    b.textContent = t(r.labelKey);
+    b.className = r.id === role ? 'on' : '';
+    b.onclick = function () { setRole(r.id); };
+    bar.appendChild(b);
+  });
+}
+
+function setLang(l) {
+  lang = l;
+  try { localStorage.setItem('xll_lang', l); } catch (e) {}
+  document.documentElement.lang = l === 'ru' ? 'ru' : 'zh-CN';
+  paintChrome();
+  render();
 }
 
 function setRole(id) {
@@ -361,17 +405,17 @@ function back() {
 
 function action(name, orderId) {
   var res = XLLStore.applyAction(name, { orderId: orderId, role: role });
-  if (res.toast) showToast(res.toast);
+  if (res.toast) showToast(tr(res.toast));
   render();
 }
 
 function primaryAction(o) {
   if (role === 'Nina' || role === '张青昊') {
-    if (o.phase === 'inquiry' && !o.accepted) return { act: 'accept', label: '已接单' };
-    if (o.phase === 'inquiry') return { act: 'quote', label: '已报价' };
+    if (o.phase === 'inquiry' && !o.accepted) return { act: 'accept', label: t('actAccept') };
+    if (o.phase === 'inquiry') return { act: 'quote', label: t('actQuote') };
   }
-  if (role === '波塔' && o.phase === 'fx') return { act: 'fx_done', label: '确认换汇' };
-  if (role === '那尔' && o.phase === 'inspect') return { act: 'inspect_done', label: '验车完成' };
+  if (role === '波塔' && o.phase === 'fx') return { act: 'fx_done', label: t('actFx') };
+  if (role === '那尔' && o.phase === 'inspect') return { act: 'inspect_done', label: t('actInspect') };
   return null;
 }
 
@@ -384,15 +428,15 @@ function rowHtml(o, withBtn) {
     : '';
   return '<div class="' + cls + '">' +
     '<div class="row-main" onclick="openDetail(\'' + o.id + '\')">' +
-      '<div class="r"><div class="car">' + o.title + '</div><div class="dur">' + o.dur + '</div></div>' +
-      '<div class="meta">' + o.stepShort + ' · ' + o.owner + '</div>' +
+      '<div class="r"><div class="car">' + o.title + '</div><div class="dur">' + tr(o.dur) + '</div></div>' +
+      '<div class="meta">' + tr(o.stepShort) + ' · ' + o.owner + '</div>' +
     '</div>' + btn + '</div>';
 }
 
 function renderTodo(state) {
   var list = XLLStore.todosForRole(state, role);
-  var html = '<div class="sect"><span>今日待办</span><span>' + role + '</span></div>';
-  if (!list.length) html += '<div class="empty">暂无待办 · 状态已同步老板端</div>';
+  var html = '<div class="sect"><span>' + t('todayTodo') + '</span><span>' + role + '</span></div>';
+  if (!list.length) html += '<div class="empty">' + t('emptyTodo') + '</div>';
   else {
     html += '<div class="row-list">';
     list.forEach(function (o) { html += rowHtml(o, true); });
@@ -403,8 +447,8 @@ function renderTodo(state) {
 
 function renderMine(state) {
   var list = XLLStore.myOrders(state, role);
-  var html = '<div class="sect"><span>我的在途</span><span>' + list.length + ' 单</span></div><div class="row-list">';
-  if (!list.length) html += '<div class="empty">暂无关联订单</div>';
+  var html = '<div class="sect"><span>' + t('myOrders') + '</span><span>' + t('ordersN', { n: list.length }) + '</span></div><div class="row-list">';
+  if (!list.length) html += '<div class="empty">' + t('emptyMine') + '</div>';
   else list.forEach(function (o) { html += rowHtml(o, true); });
   html += '</div>';
   document.getElementById('s-mine').innerHTML = html;
@@ -413,36 +457,36 @@ function renderMine(state) {
 function renderCheck(state) {
   var done = !!(state.daily && state.daily[role]);
   var isSales = role === 'Nina' || role === '张青昊';
-  var html = '<div class="sect"><span>今日打卡</span></div><div class="card">';
+  var html = '<div class="sect"><span>' + t('todayCheck') + '</span></div><div class="card">';
   if (isSales) {
-    html += '<div class="car" style="font-size:0.875em">日报（约 10 秒）</div>' +
-      '<div class="who" style="margin-top:6px">有进展 / 无进展 + 询价 · 已报价 · 意向 · 难点</div>';
-    if (done) html += '<button type="button" class="btn ghost" disabled>今日已提交</button>';
-    else html += '<button type="button" class="btn" onclick="action(\'daily\')">提交：今日有进展</button>';
+    html += '<div class="car" style="font-size:0.875em">' + t('dailyTitle') + '</div>' +
+      '<div class="who" style="margin-top:6px">' + t('dailyHint') + '</div>';
+    if (done) html += '<button type="button" class="btn ghost" disabled>' + t('dailyDone') + '</button>';
+    else html += '<button type="button" class="btn" onclick="action(\'daily\')">' + t('dailySubmit') + '</button>';
   } else if (role === '波塔') {
-    html += '<div class="car" style="font-size:0.875em">内勤到岗</div><div class="who" style="margin-top:6px">11:00–20:00 · 演示一键确认</div>';
+    html += '<div class="car" style="font-size:0.875em">' + t('officeCheck') + '</div><div class="who" style="margin-top:6px">' + t('officeHint') + '</div>';
     html += done
-      ? '<button type="button" class="btn ghost" disabled>已确认到岗</button>'
-      : '<button type="button" class="btn" onclick="action(\'daily\')">确认到岗</button>';
+      ? '<button type="button" class="btn ghost" disabled>' + t('officeDone') + '</button>'
+      : '<button type="button" class="btn" onclick="action(\'daily\')">' + t('officeGo') + '</button>';
   } else {
-    html += '<div class="car" style="font-size:0.875em">外勤报备</div><div class="who" style="margin-top:6px">口岸 / 验车 · 演示一键报备</div>';
+    html += '<div class="car" style="font-size:0.875em">' + t('fieldCheck') + '</div><div class="who" style="margin-top:6px">' + t('fieldHint') + '</div>';
     html += done
-      ? '<button type="button" class="btn ghost" disabled>已报备</button>'
-      : '<button type="button" class="btn" onclick="action(\'daily\')">外勤报备</button>';
+      ? '<button type="button" class="btn ghost" disabled>' + t('fieldDone') + '</button>'
+      : '<button type="button" class="btn" onclick="action(\'daily\')">' + t('fieldGo') + '</button>';
   }
-  html += '</div><button type="button" class="btn ghost" onclick="var r=XLLStore.applyAction(\'reset\');showToast(r.toast);render();">重置演示数据</button>';
-  html += '<div class="who" style="margin-top:10px;text-align:center">与老板端同一浏览器可联动 · 改完请打开老板端查看</div>';
+  html += '</div><button type="button" class="btn ghost" onclick="var r=XLLStore.applyAction(\'reset\');showToast(tr(r.toast));render();">' + t('resetDemo') + '</button>';
+  html += '<div class="who" style="margin-top:10px;text-align:center">' + t('syncHint') + '</div>';
   document.getElementById('s-check').innerHTML = html;
 }
 
 function renderMsg(state) {
   var list = XLLStore.messagesFor(state, role);
-  var html = '<div class="sect"><span>消息</span><span>催办与提醒</span></div><div class="row-list">';
-  if (!list.length) html += '<div class="empty">暂无消息</div>';
+  var html = '<div class="sect"><span>' + t('msgTitle') + '</span><span>' + t('msgSub') + '</span></div><div class="row-list">';
+  if (!list.length) html += '<div class="empty">' + t('emptyMsg') + '</div>';
   else list.forEach(function (m) {
     html += '<div class="row-item w" onclick="' + (m.orderId ? 'openDetail(\'' + m.orderId + '\')' : '') + '">' +
-      '<div class="row-main"><div class="r"><div class="car">' + m.title + '</div><div class="dur w">' + m.t + '</div></div>' +
-      '<div class="meta">' + m.body + '</div></div></div>';
+      '<div class="row-main"><div class="r"><div class="car">' + tr(m.title) + '</div><div class="dur w">' + m.t + '</div></div>' +
+      '<div class="meta">' + tr(m.body) + '</div></div></div>';
   });
   html += '</div>';
   document.getElementById('s-msg').innerHTML = html;
@@ -453,15 +497,15 @@ function renderDetail(state) {
   if (!o) { back(); return; }
   o = Object.assign({ id: detailId }, o);
   var pa = primaryAction(o);
-  var html = '<button type="button" class="back" onclick="back()">‹ 返回</button>' +
-    '<div class="card"><div class="r"><div class="car">' + (o.titleFull || o.title) + '</div><div class="dur w">' + o.status + '</div></div>' +
+  var html = '<button type="button" class="back" onclick="back()">' + t('back') + '</button>' +
+    '<div class="card"><div class="r"><div class="car">' + (o.titleFull || o.title) + '</div><div class="dur w">' + tr(o.status) + '</div></div>' +
     '<div class="who" style="margin-top:4px">' + o.meta + '</div></div>' +
-    '<div class="sect"><span>当前节点</span></div>' +
-    '<div class="focus-card"><div class="step">' + o.step + '</div><div class="subline">' + o.subline + '</div></div>';
+    '<div class="sect"><span>' + t('stuckNow') + '</span></div>' +
+    '<div class="focus-card"><div class="step">' + tr(o.step) + '</div><div class="subline">' + tr(o.subline) + '</div></div>';
   if (pa) html += '<button type="button" class="btn" onclick="action(\'' + pa.act + '\',\'' + detailId + '\')">' + pa.label + '</button>';
-  html += '<div class="sect"><span>本单资金</span></div><div class="card">';
+  html += '<div class="sect"><span>' + t('money1') + '</span></div><div class="card">';
   (o.money || []).forEach(function (r) {
-    html += '<div class="r" style="margin-top:6px"><div class="who">' + r[0] + '</div><div class="car"' + (r[2] ? ' style="' + r[2] + '"' : '') + '>' + r[1] + '</div></div>';
+    html += '<div class="r" style="margin-top:6px"><div class="who">' + tr(r[0]) + '</div><div class="car"' + (r[2] ? ' style="' + r[2] + '"' : '') + '>' + tr(r[1]) + '</div></div>';
   });
   html += '</div>';
   document.getElementById('s-detail').innerHTML = html;
@@ -469,9 +513,9 @@ function renderDetail(state) {
 
 function render() {
   var state = XLLStore.load();
-  var titles = { todo: '待办', mine: '我的单', check: '打卡', msg: '消息', detail: '订单详情' };
+  var titleMap = { todo: 'tabTodo', mine: 'tabMine', check: 'tabCheck', msg: 'tabMsg', detail: 't_detail' };
   var cur = track[track.length - 1];
-  document.getElementById('hdTitle').textContent = titles[cur] || '员工端';
+  document.getElementById('hdTitle').textContent = t(titleMap[cur] || 'staffTitle');
   document.querySelectorAll('.screen').forEach(function (s) { s.classList.remove('on'); });
   if (cur === 'detail') {
     document.getElementById('s-detail').classList.add('on');
@@ -487,20 +531,9 @@ function render() {
 }
 
 (function init() {
-  var bar = document.getElementById('roleBar');
-  ROLES.forEach(function (r) {
-    var b = document.createElement('button');
-    b.type = 'button';
-    b.dataset.role = r.id;
-    b.textContent = r.label;
-    b.onclick = function () { setRole(r.id); };
-    bar.appendChild(b);
-  });
   var state = XLLStore.load();
   role = state.role || 'Nina';
-  document.querySelectorAll('#roleBar button').forEach(function (b) {
-    b.classList.toggle('on', b.dataset.role === role);
-  });
+  paintChrome();
   render();
   XLLStore.subscribe(function () {
     if (document.visibilityState === 'visible') render();
