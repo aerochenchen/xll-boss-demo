@@ -346,6 +346,11 @@
   }
   .topbar { padding-top: env(safe-area-inset-top, 0px); }
   .toast { bottom: calc(62px + env(safe-area-inset-bottom, 0px)); }
+  .link-staff {
+    font-size: 0.5625em; font-weight: 600; color: var(--navy); text-decoration: none;
+    border: 1px solid #C5D2E6; background: var(--navy-soft); border-radius: 8px;
+    padding: 6px 8px; white-space: nowrap; flex: none;
+  }
 
   @media (min-width: 520px) {
     html, body { background: #EEF1F5; }
@@ -379,6 +384,7 @@
         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6 9 12l6 6"/></svg>
       </button>
       <div class="t" id="hdTitle">概览</div>
+      <a class="link-staff" href="./staff.html">员工端</a>
       <button type="button" class="icon" id="gear" onclick="go('settings')" aria-label="设置">
         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h4M12 8h8M4 16h8M16 16h4"/><circle cx="10" cy="8" r="2"/><circle cx="14" cy="16" r="2"/></svg>
       </button>
@@ -398,7 +404,7 @@
       <!-- ================= 概览（董事长：结果 → 推动 → 关注） ================= -->
       <div class="screen on" id="s-overview">
         <div class="ov-brief">
-          <p class="ov-brief-main" data-i="ovHead">本月利润 22.0 万 · 超时订单 5 单</p>
+          <p class="ov-brief-main" id="ovHead">本月利润 22.0 万 · 超时订单 — 单</p>
           <p class="ov-brief-sub" data-i="ovSub">9/1–9/14 · 今日回款 ¥186 万 · 在途 21 台</p>
         </div>
 
@@ -418,28 +424,13 @@
         </div>
 
         <div class="sect"><span data-i="ovAction">超时订单</span><span data-i="ovActionSub">按停留时长</span></div>
-        <div class="stuck-list">
-          <div class="stuck-row">
-            <div class="stuck-main" onclick="openDetail('l6')">
-              <div class="r"><div class="car">理想 L6</div><div class="dur">2天3小时</div></div>
-              <div class="meta">换汇 · 波塔 · 已催 2 次</div>
-            </div>
-            <button type="button" class="btn-sm admin" data-name="波塔" data-car="理想L6" data-i="remind">催办</button>
-          </div>
-          <div class="stuck-row">
-            <div class="stuck-main" onclick="openDetail('ford')">
-              <div class="r"><div class="car">Ford Transit</div><div class="dur">超时</div></div>
-              <div class="meta">询价 · Nina · 超 30 分钟</div>
-            </div>
-            <button type="button" class="btn-sm admin" data-name="Nina" data-car="Ford Transit" data-i="remind3">催办</button>
-          </div>
-        </div>
-        <button type="button" class="more-link" onclick="goOrdersStuck()" data-i="moreStuck">还有 3 单超时 ›</button>
+        <div class="stuck-list" id="stuckList"></div>
+        <button type="button" class="more-link" onclick="goOrdersStuck()" id="moreStuck">还有超时订单 ›</button>
 
         <div class="sect"><span data-i="ovWatch">今日关注</span></div>
         <div class="stat-strip">
           <button type="button" class="stat-chip" onclick="goOrdersInq()"><span class="sn">12</span><span class="sl" data-i="inq">询价</span></button>
-          <button type="button" class="stat-chip hot" onclick="goOrdersStuck()"><span class="sn">5</span><span class="sl" data-i="stuckShort">超时</span></button>
+          <button type="button" class="stat-chip hot" onclick="goOrdersStuck()"><span class="sn" id="statStuck">5</span><span class="sl" data-i="stuckShort">超时</span></button>
           <button type="button" class="stat-chip hot" onclick="tab('staff')"><span class="sn">4</span><span class="sl" data-i="staffAbn">人异常</span></button>
           <button type="button" class="stat-chip" onclick="go('notifications')"><span class="sn">7</span><span class="sl" data-i="ovAlert">提醒</span></button>
         </div>
@@ -456,44 +447,7 @@
           <button type="button" data-f="exit" onclick="setOrderFilter('exit')">待出境</button>
         </div>
 
-        <div class="row-list" id="orderList">
-          <div class="row-item" data-f="stuck fx" onclick="openDetail('l6')">
-            <div class="row-main">
-              <div class="r"><div class="car">理想 L6</div><div class="dur">2天3小时</div></div>
-              <div class="meta">换汇 · 波塔</div>
-            </div>
-          </div>
-          <div class="row-item w" data-f="stuck inq" onclick="openDetail('ford')">
-            <div class="row-main">
-              <div class="r"><div class="car">Ford Transit</div><div class="dur">超时</div></div>
-              <div class="meta">询价 · Nina</div>
-            </div>
-          </div>
-          <div class="row-item w" data-f="stuck" onclick="openDetail('q05')">
-            <div class="row-main">
-              <div class="r"><div class="car">启源 Q05</div><div class="dur">1天5小时</div></div>
-              <div class="meta">验车 · 那尔</div>
-            </div>
-          </div>
-          <div class="row-item w" data-f="fx" onclick="openDetail('su7')">
-            <div class="row-main">
-              <div class="r"><div class="car">小米 SU7</div><div class="dur w">8小时</div></div>
-              <div class="meta">换汇 · Nina</div>
-            </div>
-          </div>
-          <div class="row-item" data-f="exit" onclick="openDetail('x70')">
-            <div class="row-main">
-              <div class="r"><div class="car">捷途 X70L</div><div class="dur g">待出境</div></div>
-              <div class="meta">口岸 · Bota</div>
-            </div>
-          </div>
-          <div class="row-item w" data-f="inq" onclick="openDetail('s07')">
-            <div class="row-main">
-              <div class="r"><div class="car">深蓝 S07</div><div class="dur w">2小时</div></div>
-              <div class="meta">询价 · 张青昊</div>
-            </div>
-          </div>
-        </div>
+        <div class="row-list" id="orderList"></div>
       </div>
 
       <!-- ================= 订单详情 ================= -->
@@ -868,6 +822,7 @@
   <p class="hint" style="margin-top:10px">说明：以上均为<b>示例数据</b>，用于演示界面与流程；正式版数据由员工在微信里操作自动汇总。俄罗斯老板可切换俄语界面（Рус）。</p>
 </div>
 
+<script src="./store.js"></script>
 <script>
 var I18N = {
   zh: { nav1:'概览', nav2:'订单', nav3:'车辆', nav4:'资金', nav5:'人',
@@ -904,125 +859,49 @@ var lang = 'zh';
 var track = ['overview'];
 var currentOrderId = 'l6';
 
-var ORDERS = {
-  l6: {
-    title: '理想 L6 · 2025款 Max', status: '进行中', meta: 'XLL260914-018 · Alex · 1 台',
-    step: '内勤换汇', subline: '停留 <b>2 天 3 小时</b> · 责任人 <b>波塔</b> · 已催 2 次',
-    remindName: '波塔', remindCar: '理想L6',
-    money: [['收（人民币）', '¥46.8万', ''], ['付（美金）', '$6.2万 · 未付', ''], ['预估利润', '≈ ¥6,500', 'color:#4A8B64']],
-    steps: [['done','询价'],['done','报价'],['done','锁单'],['done','付款'],['now','换汇'],['','出境']],
-    progressHint: '6 步摘要',
-    tl: [
-      ['done','询价中','9/11 09:12'],['done','已报价','9/11 09:38 · 26 分钟'],['done','意向确认','9/11 15:20'],
-      ['done','已锁单','9/12 10:05 · 张青昊'],['done','供应商合同已出','9/12 17:40'],['done','客户已付款','9/13 11:02 · VTB ¥46.8万'],
-      ['now','内勤已换汇','停留 2 天 3 小时 · 已催 2 次'],['todo','供应商已到账','待办 · 波塔'],['todo','许可证已出','待办'],
-      ['todo','外勤已验车','待办 · 那尔'],['todo','车辆已出境','待办'],['todo','订单完成','待办']
-    ],
-    groups: ['艾克启源 Q05问题解决群（11）','Бу авто & Ада авто（192）','XLL内部工作群（21）'],
-    files: [['供应商合同.pdf','已完成','g'],['客户水单.jpg','已完成','g'],['车辆许可证','待上传','w'],['验车视频','待上传','w']],
-    filesHint: '2/4',
-    roles: [['业务员','张青昊'],['内勤','波塔'],['外勤','那尔']],
-    cust: '客户档案 · Alex', supp: '供应商 · 艾克启源'
-  },
-  ford: {
-    title: 'Ford Transit Custom', status: '询价中', meta: 'XLL260914-022 · Alex · 需求询价',
-    step: '询价待回复', subline: '停留 <b>超时</b> · 责任人 <b>Nina</b> · 超 30 分钟未回',
-    remindName: 'Nina', remindCar: 'Ford Transit',
-    money: [['收（人民币）', '待报价', ''], ['付（美金）', '待锁单', ''], ['预估利润', '—', '']],
-    steps: [['now','询价'],['','报价'],['','锁单'],['','付款'],['','换汇'],['','出境']],
-    progressHint: '刚起步',
-    tl: [
-      ['now','询价中','今日 · 客户群已整理：2022-2023 / 2.0柴油 / CIP Ussury'],
-      ['todo','已报价','待办 · Nina（制度 30 分钟内）'],['todo','意向确认','待办'],['todo','已锁单','待办'],
-      ['todo','供应商合同已出','待办'],['todo','客户已付款','待办'],['todo','内勤已换汇','待办'],
-      ['todo','供应商已到账','待办'],['todo','许可证已出','待办'],['todo','外勤已验车','待办'],
-      ['todo','车辆已出境','待办'],['todo','订单完成','待办']
-    ],
-    groups: ['Бу авто & Ада авто（192）','XLL内部工作群（21）'],
-    files: [['询价需求摘要.txt','已整理','g'],['报价单','待出','w']],
-    filesHint: '1/2',
-    roles: [['业务员','Nina'],['内勤','—'],['外勤','—']],
-    cust: '客户档案 · Alex', supp: '供应商档案'
-  },
-  q05: {
-    title: '启源 Q05', status: '待验车', meta: 'XLL260913-011 · Yeldos · 1 台',
-    step: '外勤验车', subline: '停留 <b>1 天 5 小时</b> · 责任人 <b>那尔</b>',
-    remindName: '那尔', remindCar: '启源Q05',
-    money: [['收（人民币）', '¥19.8万', ''], ['付（美金）', '$2.5万 · 已付', ''], ['预估利润', '≈ ¥9,000', 'color:#4A8B64']],
-    steps: [['done','询价'],['done','报价'],['done','锁单'],['done','付款'],['done','换汇'],['now','出境']],
-    progressHint: '近出境',
-    tl: [
-      ['done','询价中','9/8'],['done','已报价','9/8'],['done','已锁单','9/9 · Nina'],['done','客户已付款','9/10'],
-      ['done','内勤已换汇','9/11'],['done','许可证已出','9/12'],['now','外勤已验车','停留 1 天 5 小时 · 那尔'],
-      ['todo','车辆已出境','待办'],['todo','订单完成','待办']
-    ],
-    groups: ['艾克启源 Q05问题解决群（11）','客户群 · Yeldos','XLL内部工作群（21）'],
-    files: [['供应商合同.pdf','已完成','g'],['客户水单.jpg','已完成','g'],['车辆许可证','已完成','g'],['验车视频','待上传','w']],
-    filesHint: '3/4',
-    roles: [['业务员','Nina'],['内勤','波塔'],['外勤','那尔']],
-    cust: '客户档案 · Yeldos', supp: '供应商 · 艾克启源'
-  },
-  su7: {
-    title: '小米 SU7', status: '换汇中', meta: 'XLL260914-019 · Bota · 1 台',
-    step: '内勤换汇', subline: '停留 <b>8 小时</b> · 责任人 <b>Nina</b>',
-    remindName: 'Nina', remindCar: '小米SU7',
-    money: [['收（人民币）', '¥31.5万', ''], ['付（美金）', '$4.1万 · 未付', ''], ['预估利润', '≈ ¥9,000', 'color:#4A8B64']],
-    steps: [['done','询价'],['done','报价'],['done','锁单'],['done','付款'],['now','换汇'],['','出境']],
-    progressHint: '6 步摘要',
-    tl: [
-      ['done','询价中','9/12'],['done','已报价','9/12'],['done','已锁单','9/13 · Nina'],['done','客户已付款','今日'],
-      ['now','内勤已换汇','停留 8 小时'],['todo','供应商已到账','待办'],['todo','许可证已出','待办'],
-      ['todo','外勤已验车','待办'],['todo','车辆已出境','待办'],['todo','订单完成','待办']
-    ],
-    groups: ['客户群 · Bota','XLL内部工作群（21）'],
-    files: [['供应商合同.pdf','已完成','g'],['客户水单.jpg','已完成','g'],['车辆许可证','待上传','w'],['验车视频','待上传','w']],
-    filesHint: '2/4',
-    roles: [['业务员','Nina'],['内勤','波塔'],['外勤','那尔']],
-    cust: '客户档案 · Bota', supp: '供应商档案'
-  },
-  x70: {
-    title: '捷途 X70L', status: '待出境', meta: 'XLL260912-007 · Yeldos · 1 台',
-    step: '车辆出境', subline: '口岸待放行 · 责任人 <b>Bota</b>',
-    remindName: 'Bota', remindCar: '捷途X70L',
-    money: [['收（人民币）', '¥28.6万', ''], ['付（美金）', '$3.7万 · 已付', ''], ['预估利润', '≈ ¥9,000', 'color:#4A8B64']],
-    steps: [['done','询价'],['done','报价'],['done','锁单'],['done','付款'],['done','换汇'],['now','出境']],
-    progressHint: '待出境',
-    tl: [
-      ['done','询价中','9/5'],['done','已锁单','9/7 · Bota'],['done','客户已付款','9/8'],['done','内勤已换汇','9/9'],
-      ['done','许可证已出','9/10'],['done','外勤已验车','9/11'],['now','车辆已出境','口岸待放行'],['todo','订单完成','待办']
-    ],
-    groups: ['深蓝出海～梁雪松','客户群 · Yeldos','XLL内部工作群（21）'],
-    files: [['供应商合同.pdf','已完成','g'],['客户水单.jpg','已完成','g'],['车辆许可证','已完成','g'],['验车视频','已完成','g']],
-    filesHint: '4/4',
-    roles: [['业务员','Bota'],['内勤','波塔'],['外勤','那尔']],
-    cust: '客户档案 · Yeldos', supp: '供应商 · 深蓝出海'
-  },
-  s07: {
-    title: '深蓝 S07', status: '询价中', meta: 'XLL260914-025 · 新询价',
-    step: '询价待回复', subline: '停留 <b>2 小时</b> · 责任人 <b>张青昊</b>',
-    remindName: '张青昊', remindCar: '深蓝S07',
-    money: [['收（人民币）', '待报价', ''], ['付（美金）', '待锁单', ''], ['预估利润', '—', '']],
-    steps: [['now','询价'],['','报价'],['','锁单'],['','付款'],['','换汇'],['','出境']],
-    progressHint: '刚起步',
-    tl: [
-      ['now','询价中','今日 14:10 · 张青昊已接单'],['todo','已报价','待办'],['todo','意向确认','待办'],
-      ['todo','已锁单','待办'],['todo','客户已付款','待办'],['todo','订单完成','待办']
-    ],
-    groups: ['XLL内部工作群（21）'],
-    files: [['询价需求','整理中','w']],
-    filesHint: '0/1',
-    roles: [['业务员','张青昊'],['内勤','—'],['外勤','—']],
-    cust: '客户档案', supp: '供应商档案'
-  }
-};
-
 function esc(s) {
   return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+function phaseUI(o) {
+  var map = {
+    inquiry: { steps:[['now','询价'],['','报价'],['','锁单'],['','付款'],['','换汇'],['','出境']], hint:'询价中',
+      tl:[['now','询价中', o.subline.replace(/<[^>]+>/g,'')],['todo','已报价','待办'],['todo','订单完成','待办']] },
+    quoted: { steps:[['done','询价'],['now','报价'],['','锁单'],['','付款'],['','换汇'],['','出境']], hint:'已报价',
+      tl:[['done','询价中','完成'],['now','已报价','今日'],['todo','意向确认','待办'],['todo','订单完成','待办']] },
+    fx: { steps:[['done','询价'],['done','报价'],['done','锁单'],['done','付款'],['now','换汇'],['','出境']], hint:'换汇中',
+      tl:[['done','客户已付款','完成'],['now','内勤已换汇', o.dur],['todo','许可证已出','待办'],['todo','订单完成','待办']] },
+    license: { steps:[['done','询价'],['done','报价'],['done','锁单'],['done','付款'],['done','换汇'],['now','出境']], hint:'待出证',
+      tl:[['done','内勤已换汇','完成'],['now','许可证 / 到账','进行中'],['todo','外勤已验车','待办'],['todo','订单完成','待办']] },
+    inspect: { steps:[['done','询价'],['done','报价'],['done','锁单'],['done','付款'],['done','换汇'],['now','出境']], hint:'验车中',
+      tl:[['done','许可证已出','完成'],['now','外勤已验车', o.dur],['todo','车辆已出境','待办'],['todo','订单完成','待办']] },
+    exit: { steps:[['done','询价'],['done','报价'],['done','锁单'],['done','付款'],['done','换汇'],['now','出境']], hint:'待出境',
+      tl:[['done','外勤已验车','完成'],['now','车辆已出境','口岸'],['todo','订单完成','待办']] }
+  };
+  return map[o.phase] || map.fx;
+}
+
+function orderFromStore(id) {
+  var state = XLLStore.load();
+  var o = state.orders[id] || state.orders.l6;
+  var ui = phaseUI(o);
+  return {
+    title: o.titleFull || o.title, status: o.status, meta: o.meta,
+    step: o.step, subline: o.subline,
+    remindName: o.remindName, remindCar: o.remindCar,
+    money: o.money, roles: o.roles,
+    steps: ui.steps, progressHint: ui.hint, tl: ui.tl,
+    groups: ['关联业务群', 'XLL内部工作群（21）'],
+    files: [['业务附件','按节点上传','w']], filesHint: '—',
+    cust: '客户档案', supp: '供应商档案'
+  };
+}
+
 function renderDetail(id) {
-  var o = ORDERS[id] || ORDERS.l6;
-  currentOrderId = ORDERS[id] ? id : 'l6';
+  var state = XLLStore.load();
+  if (!state.orders[id]) id = 'l6';
+  currentOrderId = id;
+  var o = orderFromStore(id);
   document.getElementById('d-title').textContent = o.title;
   document.getElementById('d-status').textContent = o.status;
   document.getElementById('d-meta').textContent = o.meta;
@@ -1031,21 +910,19 @@ function renderDetail(id) {
   var btn = document.getElementById('d-remind');
   btn.dataset.name = o.remindName;
   btn.dataset.car = o.remindCar;
+  btn.dataset.oid = id;
   btn.textContent = I18N[lang].remind2 || '催办';
-
   document.getElementById('d-money').innerHTML = o.money.map(function (r) {
     var style = r[2] ? ' style="' + r[2] + '"' : '';
     return '<div class="r"><div class="who">' + esc(r[0]) + '</div><div class="car"' + style + '>' + esc(r[1]) + '</div></div>';
   }).join('');
-
   document.getElementById('d-progress-hint').textContent = o.progressHint;
   document.getElementById('d-steps').innerHTML = o.steps.map(function (s) {
     return '<i class="' + esc(s[0]) + '">' + esc(s[1]) + '</i>';
   }).join('');
   document.getElementById('d-tl').innerHTML = o.tl.map(function (t) {
-    return '<li class="' + esc(t[0]) + '"><div class="d"><i></i></div><div class="c"><b>' + esc(t[1]) + '</b><em>' + esc(t[2]) + '</em></div></li>';
+    return '<li class="' + esc(t[0]) + '"><div class="d"><i></i></div><div class="c"><b>' + esc(t[1]) + '</b><em>' + esc(String(t[2]).replace(/<[^>]+>/g,'')) + '</em></div></li>';
   }).join('');
-
   document.getElementById('d-group-hint').textContent = o.groups.length + ' 个';
   document.getElementById('d-groups').innerHTML = o.groups.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('');
   document.getElementById('d-files-hint').textContent = o.filesHint;
@@ -1057,7 +934,6 @@ function renderDetail(id) {
   }).join('');
   document.getElementById('d-cust-btn').textContent = o.cust;
   document.getElementById('d-supp-btn').textContent = o.supp;
-
   ['fold-progress','fold-group','fold-files','fold-people'].forEach(function (fid) {
     var el = document.getElementById(fid);
     if (el) el.classList.remove('open');
@@ -1067,6 +943,48 @@ function renderDetail(id) {
 function openDetail(id) {
   renderDetail(id);
   go('detail');
+}
+
+function refreshFromStore() {
+  if (typeof XLLStore === 'undefined') return;
+  var state = XLLStore.load();
+  var stuck = XLLStore.stuckList(state);
+  var n = stuck.length;
+  document.getElementById('ovHead').textContent = '本月利润 22.0 万 · 超时订单 ' + n + ' 单';
+  var st = document.getElementById('statStuck');
+  if (st) st.textContent = String(n);
+  var more = document.getElementById('moreStuck');
+  if (more) more.textContent = n > 2 ? ('还有 ' + Math.max(0, n - 2) + ' 单超时 ›') : (n ? '查看全部超时 ›' : '暂无超时订单');
+
+  var top = stuck.slice(0, 2);
+  var html = '';
+  top.forEach(function (o) {
+    html += '<div class="stuck-row">' +
+      '<div class="stuck-main" onclick="openDetail(\'' + o.id + '\')">' +
+        '<div class="r"><div class="car">' + esc(o.title) + '</div><div class="dur">' + esc(o.dur) + '</div></div>' +
+        '<div class="meta">' + esc(o.stepShort) + ' · ' + esc(o.owner) + (o.remind ? (' · 已催 ' + o.remind + ' 次') : '') + '</div>' +
+      '</div>' +
+      '<button type="button" class="btn-sm admin" data-oid="' + o.id + '" data-name="' + esc(o.remindName || o.owner) + '" data-car="' + esc(o.remindCar || o.title) + '">催办</button>' +
+    '</div>';
+  });
+  if (!html) html = '<div class="who" style="padding:12px;text-align:center">暂无超时订单 · 员工端已推进</div>';
+  document.getElementById('stuckList').innerHTML = html;
+
+  var listHtml = '';
+  Object.keys(state.orders).forEach(function (id) {
+    var o = state.orders[id];
+    var tags = (o.filter || []).join(' ');
+    if (o.stuck && tags.indexOf('stuck') < 0) tags = (tags + ' stuck').trim();
+    var cls = o.stuck ? 'row-item' : 'row-item w';
+    if (!o.stuck && (o.phase === 'quoted' || o.phase === 'license' || o.phase === 'exit')) cls = 'row-item g';
+    listHtml += '<div class="' + cls + '" data-f="' + esc(tags) + '" onclick="openDetail(\'' + id + '\')">' +
+      '<div class="row-main"><div class="r"><div class="car">' + esc(o.title) + '</div><div class="dur">' + esc(o.dur) + '</div></div>' +
+      '<div class="meta">' + esc(o.stepShort) + ' · ' + esc(o.owner) + '</div></div></div>';
+  });
+  document.getElementById('orderList').innerHTML = listHtml;
+  setOrderFilter(orderFilter || 'all');
+  document.querySelectorAll('#stuckList .admin').forEach(bindAdmin);
+  if (track[track.length - 1] === 'detail') renderDetail(currentOrderId);
 }
 
 function setLang(l) {
@@ -1157,22 +1075,24 @@ function sw(row) { var s = row.querySelector('.sw'); if (s) s.classList.toggle('
   setScale(saved || '1.3');
 })();
 
-var sent = {};
 function bindAdmin(b) {
   if (b.dataset.bound) return;
   b.dataset.bound = '1';
   b.addEventListener('click', function (e) {
     e.stopPropagation();
-    var n = b.dataset.name, c = b.dataset.car, k = n + c;
-    if (!n) return;
-    sent[k] = (sent[k] || 0) + 1;
-    var d = new Date(), hh = String(d.getHours()).padStart(2, '0'), mm = String(d.getMinutes()).padStart(2, '0');
-    show2('已提醒 ' + n + '（第 ' + sent[k] + ' 次）· ' + hh + ':' + mm);
-    b.textContent = '已发(' + sent[k] + ')';
+    var oid = b.dataset.oid;
+    if (!oid) return;
+    var res = XLLStore.applyAction('remind', { orderId: oid });
+    show2(res.toast || '已催办');
+    b.textContent = '已催';
+    refreshFromStore();
   });
 }
-document.querySelectorAll('.admin').forEach(bindAdmin);
-renderDetail('l6');
+
+refreshFromStore();
+XLLStore.subscribe(function () {
+  if (document.visibilityState === 'visible') refreshFromStore();
+});
 
 document.getElementById('bell').addEventListener('click', function () { go('notifications'); });
 </script>
