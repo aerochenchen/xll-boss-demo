@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="description" content="汽车贸易管理系统示例 · 老板驾驶舱演示（示例数据）">
+<meta property="og:title" content="汽车贸易管理系统 · 示例">
+<meta property="og:description" content="老板驾驶舱演示：超时催办、订单、资金、人员。示例数据，可点击操作。">
+<meta property="og:type" content="website">
+<title>汽车贸易管理系统 · 示例</title>
+<style>
+  :root {
+    /* 浅色商务：避免大面积近黑块，主色用中蓝灰 */
+    --ink: #2C3A4A;
+    --navy: #4A6FA5;
+    --navy-soft: #E8EEF6;
+    --paper: #F7F8FA;
+    --card: #FFFFFF;
+    --foreground: #2C3A4A;
+    --muted-foreground: #6B7A8D;
+    --border: #E5E9EF;
+    --accent: #F0F3F7;
+    --danger: #C45C52;
+    --warn: #C48A3A;
+    --ok: #4A8B64;
+    --hot-bg: #FBF2F1;
+    --ok-bg: #F1F7F3;
+    --warn-bg: #FBF6EE;
+    --s: 1.3;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #EEF1F5;
+    color: var(--foreground);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  }
+  button, input { font-family: inherit; }
+  button:focus-visible, .icon:focus-visible, .lang span:focus-visible, .back:focus-visible {
+    outline: 2px solid var(--navy); outline-offset: 2px;
+  }
+  .shell { width: 430px; font-size: 18px; padding: 18px 16px 24px; margin: 0 auto; }
+  .kicker { margin: 0 0 4px; font-size: 0.625em; letter-spacing: .12em; font-weight: 600; color: var(--navy); text-transform: uppercase; }
+  .title { font-size: 0.9375em; font-weight: 700; margin: 0 0 4px; color: var(--ink); letter-spacing: .01em; }
+  .sub { font-size: 0.7188em; color: var(--muted-foreground); margin: 0 0 12px; line-height: 1.6; }
+  .chips { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .chip { font-size: 0.6562em; border: 1px solid var(--border); border-radius: 4px; padding: 4px 9px; color: var(--muted-foreground); background: #fff; }
+
+  .phone {
+    width: 390px; height: 772px;
+    font-size: calc(16px * var(--s, 1.3));
+    border: 1px solid #D8DEE6; border-radius: 28px;
+    background: var(--paper);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  /* 浅色顶栏：与内容区连续，不再用近黑大色块 */
+  .topbar {
+    background: #FAFBFC;
+    color: var(--foreground);
+    flex: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .sb { display: flex; justify-content: space-between; padding: 8px 16px 2px; font-size: 0.6562em; color: #8A96A6; }
+  .hd { display: flex; align-items: center; gap: 8px; padding: 6px 12px 12px; }
+  .hd .t { font-size: 0.9688em; font-weight: 700; flex: 1; color: var(--ink); letter-spacing: .02em; min-width: 0; }
+  .icon {
+    width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    color: #6B7A8D; background: #fff; flex: none; position: relative; padding: 0;
+  }
+  .icon:hover { background: var(--accent); color: var(--ink); }
+  .icon.on { color: var(--navy); border-color: #C5D2E6; background: var(--navy-soft); }
+  .icon .ico { width: 18px; height: 18px; }
+  .dot { position: absolute; top: 5px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #D9776C; border: 1.5px solid #FAFBFC; }
+  .lang { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.6250em; flex: none; background: #fff; }
+  .lang span { padding: 6px 8px; cursor: pointer; color: #8A96A6; }
+  .lang span.on { background: var(--navy-soft); color: var(--navy); font-weight: 600; }
+
+  .body { flex: 1; overflow-y: auto; padding: 12px 13px 14px; }
+  .body::-webkit-scrollbar { width: 0; }
+  .screen { display: none; }
+  .screen.on { display: block; }
+
+  .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .kpis.tri { grid-template-columns: 1fr 1fr 1fr; }
+  .kpi { border: 1px solid var(--border); border-radius: 8px; padding: 10px 9px; background: #fff; }
+  .kpi .n { font-size: 1.0938em; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .kpi .l { font-size: 0.6250em; color: var(--muted-foreground); margin-top: 4px; }
+  .kpi.hot { background: var(--hot-bg); border-color: #E8D0CD; }
+  .kpi.hot .n { color: var(--danger); }
+  .kpi.good { background: var(--ok-bg); border-color: #C8DBC8; }
+  .kpi.good .n { color: var(--ok); }
+  .kpi.tap { cursor: pointer; }
+  .kpi.tap:active { background: var(--accent); }
+
+  .sect {
+    font-size: 0.8125em; font-weight: 700; margin: 16px 0 8px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    color: var(--ink); letter-spacing: .02em;
+  }
+  .sect:first-child { margin-top: 2px; }
+  .sect > span:first-child { font-size: 1em; font-weight: 700; color: var(--ink); }
+  .sect > span + span { font-size: 0.6875em; font-weight: 400; color: var(--muted-foreground); letter-spacing: 0; }
+
+  .card { border: 1px solid var(--border); border-radius: 8px; padding: 10px 11px; margin-bottom: 8px; background: #fff; }
+  .card.tap { cursor: pointer; }
+  .card.tap:hover { background: #F9FAFB; }
+  .card.tap:active { background: var(--accent); }
+  .r { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .car { font-size: 0.8125em; font-weight: 700; color: var(--ink); }
+  .who { font-size: 0.6250em; color: var(--muted-foreground); margin-top: 3px; line-height: 1.5; }
+  .stop { font-size: 0.6875em; margin-top: 6px; line-height: 1.55; color: var(--foreground); }
+  .dur { font-size: 0.6562em; white-space: nowrap; color: var(--danger); font-variant-numeric: tabular-nums; font-weight: 600; }
+  .dur.w { color: var(--warn); }
+  .dur.g { color: var(--ok); }
+  .dur.b { color: var(--muted-foreground); font-weight: 400; }
+  .lft { border-left: 3px solid #D4A5A0; }
+  .lft.w { border-left: 3px solid #D4B888; }
+
+  /* 概览极简：一行扫一眼 */
+  .stuck-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+  .stuck-row {
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--border); border-radius: 8px; background: #fff;
+    border-left: 3px solid #D4A5A0; padding: 10px 10px 10px 11px;
+  }
+  .stuck-row.w { border-left-color: #D4B888; }
+  .stuck-main { flex: 1; min-width: 0; cursor: pointer; }
+  .stuck-main .car { font-size: 0.8125em; }
+  .stuck-main .meta { font-size: 0.6562em; color: var(--muted-foreground); margin-top: 3px; line-height: 1.4; }
+  .stuck-main .meta b { font-weight: 600; color: #3D4A5A; }
+  .btn-sm {
+    flex: none; min-width: 52px; min-height: 36px; padding: 0 10px;
+    border: 1px solid #C5D2E6; border-radius: 8px;
+    background: var(--navy-soft); color: #3D5A80;
+    font-size: 0.6875em; font-weight: 600; cursor: pointer;
+  }
+  .btn-sm:hover { background: #DCE5F0; }
+  .btn-sm:active { background: #D0DBEA; }
+  .more-link {
+    display: block; text-align: center; padding: 10px 0 4px;
+    font-size: 0.6875em; font-weight: 600; color: var(--navy);
+    cursor: pointer; border: 0; background: transparent; width: 100%;
+  }
+  .more-link:hover { color: #3D5A80; }
+
+  /* 全站统一：列表 / 筛选 / 折叠 */
+  .row-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+  .row-item, .stuck-row { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 8px; background: #fff; border-left: 3px solid #D4A5A0; padding: 10px 10px 10px 11px; }
+  .row-item.w, .stuck-row.w { border-left-color: #D4B888; }
+  .row-item.g { border-left-color: #A8C9B4; }
+  .row-main, .stuck-main { flex: 1; min-width: 0; cursor: pointer; }
+  .row-main .car, .stuck-main .car { font-size: 0.8125em; }
+  .row-main .meta, .stuck-main .meta { font-size: 0.6562em; color: var(--muted-foreground); margin-top: 3px; line-height: 1.4; }
+  .row-main .meta b, .stuck-main .meta b { font-weight: 600; color: #3D4A5A; }
+  .row-item[data-hidden="1"] { display: none; }
+
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .filters button {
+    border: 1px solid var(--border); border-radius: 999px; padding: 6px 11px;
+    font-size: 0.6562em; font-weight: 600; background: #fff; color: var(--muted-foreground); cursor: pointer;
+  }
+  .filters button.on { background: var(--navy-soft); color: var(--navy); border-color: #C5D2E6; }
+
+  .fold { border: 1px solid var(--border); border-radius: 8px; background: #fff; margin-bottom: 8px; overflow: hidden; }
+  .fold-h {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 11px 12px; cursor: pointer; font-size: 0.8125em; color: var(--ink);
+  }
+  .fold-h > span:first-child { font-size: 1em; font-weight: 700; color: var(--ink); flex: 1; min-width: 0; }
+  .fold-h > span:not(:first-child):not(.chev) { font-size: 0.6875em; font-weight: 400; color: var(--muted-foreground); flex: none; }
+  .fold-h .chev { font-size: 0.875em; font-weight: 600; color: var(--muted-foreground); flex: none; transition: transform .15s; }
+  .fold.open .fold-h .chev { transform: rotate(90deg); }
+  .fold-b { display: none; padding: 0 11px 11px; border-top: 1px solid var(--border); }
+  .fold.open .fold-b { display: block; }
+  .fold-b .hint { margin-top: 0; }
+
+  .focus-card {
+    border: 1px solid #E8D9B8; border-radius: 10px; background: var(--warn-bg);
+    padding: 12px 11px; margin-bottom: 10px;
+  }
+  .focus-card .step { font-size: 0.9375em; font-weight: 700; color: var(--ink); line-height: 1.35; }
+  .focus-card .subline { font-size: 0.6562em; color: var(--muted-foreground); margin-top: 6px; line-height: 1.5; }
+  .focus-card .actions { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+  .focus-card .btn-sm { margin: 0; }
+
+  .step-mini { display: flex; gap: 4px; margin: 8px 0 4px; flex-wrap: wrap; }
+  .step-mini i { font-style: normal; font-size: 0.5625em; padding: 3px 6px; border-radius: 4px; background: var(--accent); color: var(--muted-foreground); }
+  .step-mini i.done { background: var(--ok-bg); color: var(--ok); }
+  .step-mini i.now { background: var(--warn-bg); color: var(--warn); font-weight: 700; }
+
+  .money-compact .r { margin-top: 6px; }
+  .money-compact .r:first-child { margin-top: 0; }
+
+  .role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .role-cell {
+    border: 1px solid var(--border); border-radius: 8px; padding: 9px 6px;
+    background: #FAFBFC; text-align: center;
+  }
+  .role-cell .role-l { display: block; font-size: 0.5625em; font-weight: 600; color: var(--muted-foreground); letter-spacing: .06em; margin-bottom: 5px; }
+  .role-cell .role-n { display: block; font-size: 0.75em; font-weight: 700; color: var(--ink); line-height: 1.25; }
+
+  .row-expand { display: none; font-size: 0.625em; color: var(--muted-foreground); padding: 0 11px 10px 14px; line-height: 1.55; border-top: 1px dashed var(--border); margin-top: -1px; background: #FAFBFC; }
+  .row-item.open + .row-expand { display: block; }
+
+  /* 概览 · 董事长视角 */
+  .ov-brief {
+    border: 1px solid #C5D2E6; border-radius: 10px; background: linear-gradient(180deg, #F4F7FB 0%, #fff 100%);
+    padding: 12px 12px 11px; margin-bottom: 10px;
+  }
+  .ov-brief-main { margin: 0; font-size: 0.875em; font-weight: 700; color: var(--ink); line-height: 1.45; }
+  .ov-brief-sub { margin: 6px 0 0; font-size: 0.625em; color: var(--muted-foreground); line-height: 1.5; }
+
+  .pulse { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; margin-bottom: 4px; }
+  .pulse-item {
+    border: 1px solid var(--border); border-radius: 8px; padding: 9px 8px; background: #fff; text-align: center;
+  }
+  .pulse-item.tap { cursor: pointer; }
+  .pulse-item.tap:active { background: var(--accent); }
+  .pulse-item .n { font-size: 0.9375em; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); line-height: 1.15; }
+  .pulse-item .l { font-size: 0.5625em; color: var(--muted-foreground); margin-top: 4px; line-height: 1.35; }
+  .pulse-item.good { background: var(--ok-bg); border-color: #C8DBC8; }
+  .pulse-item.good .n { color: var(--ok); }
+
+  .stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 6px; }
+  .stat-chip {
+    border: 1px solid var(--border); border-radius: 8px; background: #fff; padding: 10px 4px;
+    cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 58px;
+  }
+  .stat-chip:active { background: var(--accent); }
+  .stat-chip.hot { border-color: #E8D0CD; background: var(--hot-bg); }
+  .stat-chip .sn { font-size: 1.0625em; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); line-height: 1.1; }
+  .stat-chip.hot .sn { color: var(--danger); }
+  .stat-chip .sl { font-size: 0.6875em; color: var(--muted-foreground); font-weight: 600; line-height: 1.25; text-align: center; }
+
+  .btn {
+    margin-top: 8px; width: 100%; min-height: 40px;
+    border: 1px solid var(--border); background: #fff; color: var(--foreground);
+    border-radius: 8px; padding: 8px 0; font-size: 0.75em; cursor: pointer; font-weight: 600;
+  }
+  .btn:hover { background: var(--accent); }
+  .btn:active { background: #E5E9EF; }
+  .btn.pri { background: var(--navy-soft); color: #3D5A80; border-color: #C5D2E6; }
+  .btn.pri:hover { background: #DCE5F0; }
+  .btn.pri:active { background: #D0DBEA; }
+
+  .stop b { font-weight: 600; color: #3D4A5A; }
+
+  .hint { font-size: 0.5938em; color: #8A96A6; line-height: 1.6; margin-top: 6px; }
+  .box { border: 1px solid var(--border); border-radius: 8px; padding: 10px 11px; background: #fff; }
+  .box h3 { margin: 0 0 6px; font-size: 0.6875em; color: var(--ink); }
+  ul.log { margin: 0; padding: 0; }
+  ul.log li { font-size: 0.6438em; color: var(--muted-foreground); list-style: none; padding: 5px 0; border-bottom: 1px solid var(--border); line-height: 1.5; }
+  ul.log li:last-child { border-bottom: 0; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.6375em; background: #fff; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted-foreground); font-weight: 600; font-size: 0.6000em; background: var(--accent); letter-spacing: .04em; }
+  tr:last-child td { border-bottom: 0; }
+  .vin { font-variant-numeric: tabular-nums; letter-spacing: .2px; font-weight: 600; color: var(--ink); }
+  .pill { font-size: 0.5625em; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border); white-space: nowrap; font-weight: 600; }
+  .pill.r { color: var(--danger); border-color: #E8D0CD; background: var(--hot-bg); }
+  .pill.y { color: var(--warn); border-color: #E8D9B8; background: var(--warn-bg); }
+  .pill.g { color: var(--ok); border-color: #C8DBC8; background: var(--ok-bg); }
+  .pill.b { color: var(--muted-foreground); }
+
+  .bar { height: 22px; border-radius: 4px; background: #E5E9EF; position: relative; margin: 4px 0 9px; overflow: hidden; }
+  .bar i { position: absolute; inset: 0 auto 0 0; border-radius: 4px; background: #7A94B8; }
+  .bar b { position: absolute; left: 8px; top: 4px; font-size: 0.6375em; color: #fff; font-weight: 600; }
+
+  .tl { margin: 4px 0 0; padding: 0; }
+  .tl li { list-style: none; display: flex; gap: 9px; font-size: 0.6750em; padding: 0 0 10px; position: relative; }
+  .tl li:before { content: ""; position: absolute; left: 5.5px; top: 13px; bottom: 0; width: 1px; background: var(--border); }
+  .tl li:last-child:before { display: none; }
+  .tl .d { width: 12px; flex: none; }
+  .tl .d i { display: block; width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid #B8C2CE; margin-top: 2px; background: #fff; }
+  .tl li.done .d i { background: var(--ok); border-color: var(--ok); }
+  .tl li.now .d i { background: var(--warn); border-color: var(--warn); box-shadow: 0 0 0 3px #E8D9B844; }
+  .tl .c { flex: 1; }
+  .tl .c b { font-weight: 600; color: var(--ink); }
+  .tl .c em { font-style: normal; color: var(--muted-foreground); font-size: 0.6125em; display: block; margin-top: 1px; }
+  .tl li.todo .c b { color: #A0AAB8; font-weight: 400; }
+
+  .nav { display: flex; border-top: 1px solid var(--border); flex: none; background: #fff; }
+  .nav button {
+    flex: 1; background: transparent; border: 0; font-size: 0.625em; color: #8A96A6;
+    padding: 8px 2px 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    min-height: 52px; font-weight: 500; line-height: 1.2;
+  }
+  .nav button .ni { width: 20px; height: 20px; }
+  .nav button.on { color: var(--navy); font-weight: 700; }
+  .nav button.on .ni { color: var(--navy); }
+  .back {
+    cursor: pointer; color: #6B7A8D; width: 36px; height: 36px; flex: none;
+    border: 0; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .back .ico { width: 20px; height: 20px; }
+
+  .toast { position: absolute; left: 50%; bottom: 62px; transform: translateX(-50%); background: #5A6A7A; color: #fff; font-size: 0.6875em; padding: 8px 14px; border-radius: 6px; opacity: 0; transition: opacity .22s; pointer-events: none; white-space: nowrap; z-index: 9; }
+  .toast.show { opacity: 1; }
+  .wrap { position: relative; }
+  .sizes { display: flex; gap: 6px; }
+  .sizes button {
+    flex: 1; font-size: 0.8em; padding: 10px 0; border-radius: 8px; min-height: 40px;
+    border: 1px solid var(--border); background: #fff; color: var(--muted-foreground); cursor: pointer; font-weight: 600;
+  }
+  .sizes button.on { background: var(--navy-soft); color: var(--navy); border-color: #C5D2E6; }
+  .sw { width: 36px; height: 20px; border-radius: 20px; background: #D0D7E0; position: relative; flex: none; transition: background .15s; }
+  .sw:after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .sw.on { background: #7A94B8; }
+  .sw.on:after { left: 18px; }
+  .sw-row { cursor: pointer; align-items: center; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .sw, .sw:after { transition: none; }
+  }
+
+  /* 微信 / 独立分享：整页即手机界面，隐藏桌面导览 */
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    height: 100%;
+    overscroll-behavior: none;
+  }
+  .shell {
+    width: 100%; max-width: 480px; margin: 0 auto;
+    font-size: 17px; padding: 0; min-height: 100%;
+  }
+  .shell > .kicker,
+  .shell > .title,
+  .shell > .sub,
+  .shell > .chips,
+  .shell > .hint { display: none !important; }
+  .phone {
+    width: 100%; height: 100dvh; min-height: 100vh;
+    border: 0; border-radius: 0;
+    font-size: calc(16px * var(--s, 1.3));
+  }
+  .phone .sb { display: none; }
+  .nav {
+    position: sticky; bottom: 0; background: #fff;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .topbar { padding-top: env(safe-area-inset-top, 0px); }
+  .toast { bottom: calc(62px + env(safe-area-inset-bottom, 0px)); }
+
+  @media (min-width: 520px) {
+    html, body { background: #EEF1F5; }
+    .shell { padding: 24px 0; }
+    .phone {
+      height: 772px; min-height: 772px; width: 390px; margin: 0 auto;
+      border: 1px solid #D8DEE6; border-radius: 28px; overflow: hidden;
+    }
+  }
+
+  /* 分享页：整页即操作界面 */
+</style>
+</head>
+<body>
+<div class="shell">
+  <p class="kicker">XLL · 老板驾驶舱</p>
+  <p class="title">汽车贸易管理系统 · 示例 V1</p>
+  <p class="sub">全站同一套阅读规则：列表扫一眼 → 详情首屏决策 → 折叠里深挖。框内为<b>示例数据</b>。</p>
+  <div class="chips">
+    <span class="chip">概览：利润 · 回款 · 超时订单</span>
+    <span class="chip">订单：筛选 + 催办</span>
+    <span class="chip">详情：节点 · 资金 · 折叠深挖</span>
+  </div>
+
+  <div class="phone wrap">
+    <div class="topbar">
+    <div class="sb"><span>21:28</span><span>演示界面 · 示例数据</span></div>
+
+    <div class="hd">
+      <button type="button" class="back" id="back" style="display:none" onclick="back()" aria-label="返回">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6 9 12l6 6"/></svg>
+      </button>
+      <div class="t" id="hdTitle">概览</div>
+      <button type="button" class="icon" id="gear" onclick="go('settings')" aria-label="设置">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h4M12 8h8M4 16h8M16 16h4"/><circle cx="10" cy="8" r="2"/><circle cx="14" cy="16" r="2"/></svg>
+      </button>
+      <button type="button" class="icon" id="bell" aria-label="通知">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 9.5a5.5 5.5 0 1 1 11 0c0 6 2.5 6.5 2.5 8.5H4c0-2 2.5-2.5 2.5-8.5"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+        <span class="dot"></span>
+      </button>
+      <div class="lang" role="group" aria-label="语言">
+        <span class="on" id="lzh" onclick="setLang('zh')" role="button" tabindex="0">中文</span>
+        <span id="lru" onclick="setLang('ru')" role="button" tabindex="0">Рус</span>
+      </div>
+    </div>
+    </div>
+
+    <div class="body">
+
+      <!-- ================= 概览（董事长：结果 → 推动 → 关注） ================= -->
+      <div class="screen on" id="s-overview">
+        <div class="ov-brief">
+          <p class="ov-brief-main" data-i="ovHead">本月利润 22.0 万 · 超时订单 5 单</p>
+          <p class="ov-brief-sub" data-i="ovSub">9/1–9/14 · 今日回款 ¥186 万 · 在途 21 台</p>
+        </div>
+
+        <div class="pulse">
+          <div class="pulse-item good tap" onclick="tab('money')">
+            <div class="n">22.0万</div>
+            <div class="l" data-i="ovProfit">本月利润</div>
+          </div>
+          <div class="pulse-item tap" onclick="tab('money')">
+            <div class="n">186万</div>
+            <div class="l" data-i="pay">今日回款</div>
+          </div>
+          <div class="pulse-item tap" onclick="tab('orders')">
+            <div class="n">21</div>
+            <div class="l" data-i="ovInflight">在途台数</div>
+          </div>
+        </div>
+
+        <div class="sect"><span data-i="ovAction">超时订单</span><span data-i="ovActionSub">按停留时长</span></div>
+        <div class="stuck-list">
+          <div class="stuck-row">
+            <div class="stuck-main" onclick="openDetail('l6')">
+              <div class="r"><div class="car">理想 L6</div><div class="dur">2天3小时</div></div>
+              <div class="meta">换汇 · 波塔 · 已催 2 次</div>
+            </div>
+            <button type="button" class="btn-sm admin" data-name="波塔" data-car="理想L6" data-i="remind">催办</button>
+          </div>
+          <div class="stuck-row">
+            <div class="stuck-main" onclick="openDetail('ford')">
+              <div class="r"><div class="car">Ford Transit</div><div class="dur">超时</div></div>
+              <div class="meta">询价 · Nina · 超 30 分钟</div>
+            </div>
+            <button type="button" class="btn-sm admin" data-name="Nina" data-car="Ford Transit" data-i="remind3">催办</button>
+          </div>
+        </div>
+        <button type="button" class="more-link" onclick="goOrdersStuck()" data-i="moreStuck">还有 3 单超时 ›</button>
+
+        <div class="sect"><span data-i="ovWatch">今日关注</span></div>
+        <div class="stat-strip">
+          <button type="button" class="stat-chip" onclick="goOrdersInq()"><span class="sn">12</span><span class="sl" data-i="inq">询价</span></button>
+          <button type="button" class="stat-chip hot" onclick="goOrdersStuck()"><span class="sn">5</span><span class="sl" data-i="stuckShort">超时</span></button>
+          <button type="button" class="stat-chip hot" onclick="tab('staff')"><span class="sn">4</span><span class="sl" data-i="staffAbn">人异常</span></button>
+          <button type="button" class="stat-chip" onclick="go('notifications')"><span class="sn">7</span><span class="sl" data-i="ovAlert">提醒</span></button>
+        </div>
+      </div>
+
+      <!-- ================= 订单 ================= -->
+      <div class="screen" id="s-orders">
+        <div class="sect"><span data-i="inflight">在途订单 21 台</span></div>
+        <div class="filters" id="orderFilters" role="tablist">
+          <button type="button" class="on" data-f="all" onclick="setOrderFilter('all')">全部</button>
+          <button type="button" data-f="stuck" onclick="setOrderFilter('stuck')">超时</button>
+          <button type="button" data-f="inq" onclick="setOrderFilter('inq')">询价</button>
+          <button type="button" data-f="fx" onclick="setOrderFilter('fx')">换汇</button>
+          <button type="button" data-f="exit" onclick="setOrderFilter('exit')">待出境</button>
+        </div>
+
+        <div class="row-list" id="orderList">
+          <div class="row-item" data-f="stuck fx" onclick="openDetail('l6')">
+            <div class="row-main">
+              <div class="r"><div class="car">理想 L6</div><div class="dur">2天3小时</div></div>
+              <div class="meta">换汇 · 波塔</div>
+            </div>
+          </div>
+          <div class="row-item w" data-f="stuck inq" onclick="openDetail('ford')">
+            <div class="row-main">
+              <div class="r"><div class="car">Ford Transit</div><div class="dur">超时</div></div>
+              <div class="meta">询价 · Nina</div>
+            </div>
+          </div>
+          <div class="row-item w" data-f="stuck" onclick="openDetail('q05')">
+            <div class="row-main">
+              <div class="r"><div class="car">启源 Q05</div><div class="dur">1天5小时</div></div>
+              <div class="meta">验车 · 那尔</div>
+            </div>
+          </div>
+          <div class="row-item w" data-f="fx" onclick="openDetail('su7')">
+            <div class="row-main">
+              <div class="r"><div class="car">小米 SU7</div><div class="dur w">8小时</div></div>
+              <div class="meta">换汇 · Nina</div>
+            </div>
+          </div>
+          <div class="row-item" data-f="exit" onclick="openDetail('x70')">
+            <div class="row-main">
+              <div class="r"><div class="car">捷途 X70L</div><div class="dur g">待出境</div></div>
+              <div class="meta">口岸 · Bota</div>
+            </div>
+          </div>
+          <div class="row-item w" data-f="inq" onclick="openDetail('s07')">
+            <div class="row-main">
+              <div class="r"><div class="car">深蓝 S07</div><div class="dur w">2小时</div></div>
+              <div class="meta">询价 · 张青昊</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 订单详情 ================= -->
+      <div class="screen" id="s-detail">
+        <div class="card" style="margin-bottom:10px">
+          <div class="r"><div class="car" id="d-title">—</div><div class="dur w" id="d-status">进行中</div></div>
+          <div class="who" id="d-meta">—</div>
+        </div>
+
+        <div class="sect"><span data-i="stuckNow">当前节点</span></div>
+        <div class="focus-card">
+          <div class="step" id="d-step">—</div>
+          <div class="subline" id="d-subline">—</div>
+          <div class="actions">
+            <button type="button" class="btn-sm admin" id="d-remind" data-name="" data-car="" data-i="remind2">催办</button>
+          </div>
+        </div>
+
+        <div class="sect"><span data-i="money1">本单资金</span></div>
+        <div class="card money-compact" id="d-money"></div>
+
+        <div class="fold" id="fold-progress">
+          <div class="fold-h" onclick="toggleFold('fold-progress')" role="button" tabindex="0">
+            <span data-i="progressFold">进度</span><span id="d-progress-hint">摘要</span><span class="chev">›</span>
+          </div>
+          <div class="fold-b">
+            <div class="step-mini" id="d-steps"></div>
+            <ul class="tl" id="d-tl"></ul>
+          </div>
+        </div>
+
+        <div class="fold" id="fold-group">
+          <div class="fold-h" onclick="toggleFold('fold-group')" role="button" tabindex="0">
+            <span data-i="group">关联群</span><span id="d-group-hint">—</span><span class="chev">›</span>
+          </div>
+          <div class="fold-b"><ul class="log" id="d-groups"></ul></div>
+        </div>
+
+        <div class="fold" id="fold-files">
+          <div class="fold-h" onclick="toggleFold('fold-files')" role="button" tabindex="0">
+            <span data-i="files">附件</span><span id="d-files-hint">—</span><span class="chev">›</span>
+          </div>
+          <div class="fold-b" id="d-files"></div>
+        </div>
+
+        <div class="fold" id="fold-people">
+          <div class="fold-h" onclick="toggleFold('fold-people')" role="button" tabindex="0">
+            <span data-i="peopleFold">人员</span><span>业务员 / 内勤 / 外勤</span><span class="chev">›</span>
+          </div>
+          <div class="fold-b">
+            <div class="role-grid" id="d-roles"></div>
+            <button type="button" class="btn" style="margin-top:8px" id="d-cust-btn" onclick="go('customers')">客户档案</button>
+            <button type="button" class="btn" id="d-supp-btn" onclick="go('suppliers')">供应商</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 车辆 ================= -->
+      <div class="screen" id="s-vehicles">
+        <div class="sect"><span data-i="ledger">车辆台账</span></div>
+        <div class="row-list">
+          <div class="row-item" id="veh-v1" onclick="toggleVehicle('veh-v1', event)">
+            <div class="row-main">
+              <div class="r"><div class="car">…0410 · 理想 L6</div><div class="dur">换汇中</div></div>
+              <div class="meta">张青昊 · Alex</div>
+            </div>
+          </div>
+          <div class="row-expand" id="veh-v1-x">入库 9/12 · 园区展示价 ¥46.8万 · 视频 2 条 · 转发 1/3 · 许可证待出</div>
+          <div class="row-item w" id="veh-v2" onclick="toggleVehicle('veh-v2', event)">
+            <div class="row-main">
+              <div class="r"><div class="car">…1882 · 捷途 X70L</div><div class="dur w">等合同</div></div>
+              <div class="meta">Bota · Yeldos</div>
+            </div>
+          </div>
+          <div class="row-expand" id="veh-v2-x">入库 9/13 · 展示价 ¥28.6万 · 视频 1 条 · 转发 0/3</div>
+          <div class="row-item w" id="veh-v3" onclick="toggleVehicle('veh-v3', event)">
+            <div class="row-main">
+              <div class="r"><div class="car">…0925 · 启源 Q05</div><div class="dur w">待验车</div></div>
+              <div class="meta">Nina · Yeldos</div>
+            </div>
+          </div>
+          <div class="row-expand" id="veh-v3-x">展示价 ¥19.8万 · 许可证已出 · 验车 那尔 今日</div>
+          <div class="row-item g" id="veh-v4" onclick="toggleVehicle('veh-v4', event)">
+            <div class="row-main">
+              <div class="r"><div class="car">…3311 · 小米 SU7</div><div class="dur g">已出境</div></div>
+              <div class="meta">Nina · Bota</div>
+            </div>
+          </div>
+          <div class="row-expand" id="veh-v4-x">9/10 出境 · 全流程 9 天</div>
+        </div>
+      </div>
+
+      <!-- ================= 资金 ================= -->
+      <div class="screen" id="s-money">
+        <div class="sect"><span data-i="month">本月（9/1–9/14）</span></div>
+        <div class="kpis tri">
+          <div class="kpi"><div class="n">1,186万</div><div class="l">收款</div></div>
+          <div class="kpi"><div class="n">$152.5万</div><div class="l">付款</div></div>
+          <div class="kpi good"><div class="n">22.0万</div><div class="l">利润</div></div>
+        </div>
+
+        <div class="sect"><span data-i="flowRecent">近期流水</span></div>
+        <div class="row-list">
+          <div class="row-item g">
+            <div class="row-main">
+              <div class="r"><div class="car">理想 L6 · 收款</div><div class="dur g">+¥46.8万</div></div>
+              <div class="meta">9/13 VTB · 已确认</div>
+            </div>
+          </div>
+          <div class="row-item w">
+            <div class="row-main">
+              <div class="r"><div class="car">捷途 X70L · 付供应商</div><div class="dur w">-$3.7万</div></div>
+              <div class="meta">9/12 待换汇</div>
+            </div>
+          </div>
+          <div class="row-item">
+            <div class="row-main">
+              <div class="r"><div class="car">启源 Q05 · 收款</div><div class="dur g">+¥19.8万</div></div>
+              <div class="meta">9/11 其他银行</div>
+            </div>
+          </div>
+          <div class="row-item g">
+            <div class="row-main">
+              <div class="r"><div class="car">小米 SU7 · 利润结算</div><div class="dur g">+¥9,000</div></div>
+              <div class="meta">9/10 已出境归档</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fold" id="fold-channels">
+          <div class="fold-h" onclick="toggleFold('fold-channels')" role="button" tabindex="0">
+            <span data-i="channels">收款通道构成</span><span>VTB 62%</span><span class="chev">›</span>
+          </div>
+          <div class="fold-b">
+            <div class="bar"><i style="width:62%"></i><b>VTB 62%</b></div>
+            <div class="r"><div class="who">其他银行</div><div class="car">26%</div></div>
+            <div class="r"><div class="who">现金</div><div class="car">12%</div></div>
+          </div>
+        </div>
+
+        <div class="fold" id="fold-rank">
+          <div class="fold-h" onclick="toggleFold('fold-rank')" role="button" tabindex="0">
+            <span data-i="rank">成单排行</span><span>36 台</span><span class="chev">›</span>
+          </div>
+          <div class="fold-b">
+            <div class="r"><div class="car">Nina</div><div class="dur g">9 台</div></div>
+            <div class="r"><div class="car">Bota</div><div class="dur">7 台</div></div>
+            <div class="r"><div class="car">Yeldos</div><div class="dur">6 台</div></div>
+            <div class="r"><div class="car">Saha</div><div class="dur">5 台</div></div>
+            <div class="r"><div class="car">张青昊</div><div class="dur">4 台</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 人 ================= -->
+      <div class="screen" id="s-staff">
+        <div class="kpis">
+          <div class="kpi hot"><div class="n">4</div><div class="l" data-i="staffAbn">今日异常</div></div>
+          <div class="kpi"><div class="n">18/20</div><div class="l">到岗</div></div>
+        </div>
+
+        <div class="sect"><span data-i="staffQueue">异常队列</span></div>
+        <div class="row-list">
+          <div class="row-item">
+            <div class="row-main">
+              <div class="r"><div class="car">波塔 · 迟到</div><div class="dur">-20 元</div></div>
+              <div class="meta">11:26 到岗 · 未报备</div>
+            </div>
+          </div>
+          <div class="row-item w">
+            <div class="row-main">
+              <div class="r"><div class="car">多斯 · 未交日报</div><div class="dur">-30 元</div></div>
+              <div class="meta">21:00 已提醒</div>
+            </div>
+          </div>
+          <div class="row-item w">
+            <div class="row-main">
+              <div class="r"><div class="car">Saha · 未交日报</div><div class="dur">-30 元</div></div>
+              <div class="meta">21:00 已提醒</div>
+            </div>
+          </div>
+          <div class="row-item w">
+            <div class="row-main">
+              <div class="r"><div class="car">Nina · 询价超时</div><div class="dur">-20 元</div></div>
+              <div class="meta">Ford Transit · 30 分钟</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fold" id="fold-staff-daily">
+          <div class="fold-h" onclick="toggleFold('fold-staff-daily')" role="button" tabindex="0">
+            <span data-i="daily">日报 / 月报</span><span>2 未交</span><span class="chev">›</span>
+          </div>
+          <div class="fold-b">
+            <div class="r"><div class="car">未交日报</div><div class="dur">多斯、Saha</div></div>
+            <div class="r"><div class="car">月报 800 字</div><div class="dur">12/18</div></div>
+          </div>
+        </div>
+
+        <div class="fold" id="fold-staff-rp">
+          <div class="fold-h" onclick="toggleFold('fold-staff-rp')" role="button" tabindex="0">
+            <span data-i="rp">奖惩结算</span><span>基金 ¥1,240</span><span class="chev">›</span>
+          </div>
+          <div class="fold-b">
+            <div class="r"><div class="who">询价超时 Nina</div><div class="dur">-20</div></div>
+            <div class="r"><div class="who">未交日报</div><div class="dur">-60</div></div>
+            <div class="r"><div class="who">迟到 波塔</div><div class="dur">-20</div></div>
+            <div class="r"><div class="who">月度第一 Nina</div><div class="dur g">+300</div></div>
+          </div>
+        </div>
+
+        <div class="fold" id="fold-staff-duty">
+          <div class="fold-h" onclick="toggleFold('fold-staff-duty')" role="button" tabindex="0">
+            <span data-i="duty">轮值 / 请假</span><span>1 待批</span><span class="chev">›</span>
+          </div>
+          <div class="fold-b">
+            <div class="r"><div class="who">卫生轮值 周四那尔 · 周五瑞娜</div><div class="dur w">待确认</div></div>
+            <div class="r"><div class="who">请假 多斯 9/16 · 交接 Nina</div><div class="dur w">待审批</div></div>
+            <div class="r"><div class="who">外勤 那尔 / Saha</div><div class="dur g">已完成</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 通知 ================= -->
+      <div class="screen" id="s-notifications">
+        <div class="sect"><span data-i="notif">今日提醒</span><span>按时间</span></div>
+        <div class="row-list">
+          <div class="row-item" onclick="openDetail('l6')">
+            <div class="row-main">
+              <div class="r"><div class="car">理想 L6 · 换汇超时</div><div class="dur">21:10</div></div>
+              <div class="meta">已提醒 波塔 · 第 2 次</div>
+            </div>
+          </div>
+          <div class="row-item w" onclick="openDetail('q05')">
+            <div class="row-main">
+              <div class="r"><div class="car">启源 Q05 · 验车超时</div><div class="dur w">20:40</div></div>
+              <div class="meta">已提醒 那尔</div>
+            </div>
+          </div>
+          <div class="row-item w">
+            <div class="row-main">
+              <div class="r"><div class="car">日报未交</div><div class="dur w">19:55</div></div>
+              <div class="meta">多斯、Saha · 各 -30 元</div>
+            </div>
+          </div>
+          <div class="row-item w">
+            <div class="row-main">
+              <div class="r"><div class="car">询价超时 · Nina</div><div class="dur w">18:30</div></div>
+              <div class="meta">Ford Transit · -20 元</div>
+            </div>
+          </div>
+          <div class="row-item">
+            <div class="row-main">
+              <div class="r"><div class="car">到岗异常 · 波塔</div><div class="dur">16:20</div></div>
+              <div class="meta">11:26 到岗 · -20 元</div>
+            </div>
+          </div>
+          <div class="row-item g">
+            <div class="row-main">
+              <div class="r"><div class="car">捷途 X70L 入库</div><div class="dur g">11:05</div></div>
+              <div class="meta">已通知董事长</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 客户 ================= -->
+      <div class="screen" id="s-customers">
+        <div class="sect"><span data-i="cust">客户档案</span><span>28 位</span></div>
+        <div class="card">
+          <div class="r"><div class="car">Alex</div><div class="dur g">成交 A</div></div>
+          <div class="who">俄罗斯 · Бу авто &amp; Ада авто（192人客户群）<br>偏好：Ford Transit / 理想 · 在途 2 单 · 历史 14 单 · 回款 ¥612万</div>
+          <div class="hint">最近跟进：9/14 09:38 报价 Ford Transit（CIP Ussury）</div>
+        </div>
+        <div class="card">
+          <div class="r"><div class="car">Bota（Ада авто）</div><div class="dur g">成交 A</div></div>
+          <div class="who">俄罗斯 · 在途 1 单 · 历史 9 单 · 回款 ¥318万</div>
+        </div>
+        <div class="card">
+          <div class="r"><div class="car">Yeldos</div><div class="dur w">意向 B</div></div>
+          <div class="who">哈萨克斯坦 · 偏好 启源 / 捷途 · 在途 2 单 · 历史 3 单</div>
+        </div>
+        <div class="hint">客户是公司资产：业务员离职，档案和跟进记录留在公司，客户不跟着人走。</div>
+      </div>
+
+      <!-- ================= 供应商 ================= -->
+      <div class="screen" id="s-suppliers">
+        <div class="sect"><span data-i="supp">供应商档案</span><span>16 家</span></div>
+        <div class="card">
+          <div class="r"><div class="car">艾克启源</div><div class="dur g">合作 23 单</div></div>
+          <div class="who">新疆 霍尔果斯 · 主营 启源 Q05 / 理想<br>渠道价 <b>仅内勤 + 管理层可见</b>（个别业务员可临时授权，带到期日）</div>
+        </div>
+        <div class="card">
+          <div class="r"><div class="car">深蓝出海～梁雪松</div><div class="dur">合作 11 单</div></div>
+          <div class="who">主营 捷途 X70L · 信用 B</div>
+        </div>
+        <div class="hint">渠道价格谁能看、看多久，系统控——不用再靠「别说出去」。</div>
+      </div>
+
+      <!-- ================= 设置 ================= -->
+      <div class="screen" id="s-settings">
+        <div class="sect"><span data-i="fs">界面字号</span><span data-i="fsHint">手机上看得更清楚</span></div>
+        <div class="card">
+          <div class="sizes" id="sizes">
+            <button data-s="1.15" onclick="setScale('1.15')">标准</button>
+            <button data-s="1.3" onclick="setScale('1.3')">大</button>
+            <button data-s="1.45" onclick="setScale('1.45')">特大</button>
+            <button data-s="1.6" onclick="setScale('1.6')">超大</button>
+          </div>
+          <div class="hint">点一下，整屏字跟着变，下次打开还记得：<br><b>理想 L6 · 卡在客户已付款到内勤换汇 · 责任人 波塔 · 已停留 2天3小时</b></div>
+        </div>
+
+        <div class="sect"><span data-i="langSet">界面语言</span></div>
+        <div class="card">
+          <div class="sizes">
+            <button data-l="zh" onclick="setLang('zh')">中文</button>
+            <button data-l="ru" onclick="setLang('ru')">Русский</button>
+          </div>
+          <div class="hint">俄罗斯老板用自己的手机打开，切一次就记住了。</div>
+        </div>
+
+        <div class="sect"><span data-i="alerts">提醒设置</span></div>
+        <div class="card">
+          <div class="r sw-row" onclick="sw(this)"><div class="who">超时提醒（停留超 24 小时）</div><span class="sw on"></span></div>
+          <div class="r sw-row" style="margin-top:8px" onclick="sw(this)"><div class="who">日报未交提醒（每天 21:00 自动发）</div><span class="sw on"></span></div>
+          <div class="r sw-row" style="margin-top:8px" onclick="sw(this)"><div class="who">考勤异常提醒（迟到 / 旷工）</div><span class="sw on"></span></div>
+          <div class="r sw-row" style="margin-top:8px" onclick="sw(this)"><div class="who">每日经营简报（早 9:00 推送）</div><span class="sw"></span></div>
+        </div>
+
+        <div class="sect"><span data-i="archives">档案</span></div>
+        <div class="card">
+          <button type="button" class="btn" onclick="go('customers')">客户档案</button>
+          <button type="button" class="btn" onclick="go('suppliers')">供应商档案</button>
+        </div>
+
+        <div class="sect"><span data-i="about">关于</span></div>
+        <div class="card">
+          <div class="r"><div class="who">汽车贸易管理系统</div><div class="dur">示例 V1</div></div>
+          <div class="who" style="margin-top:5px">数据存公司服务器 · 每日自动备份 · 随时可导出 Excel</div>
+          <div class="who" style="margin-top:8px;font-size:0.625em;color:#8A96A6;line-height:1.55">微信不允许第三方读取群消息；询价计时以员工点击「已接单」为起点。</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="nav" id="nav">
+      <button class="on" data-t="overview" onclick="tab('overview')">
+        <svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z"/></svg>
+        <span data-i="nav1">概览</span>
+      </button>
+      <button data-t="orders" onclick="tab('orders')">
+        <svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7h12M8 12h12M8 17h12"/><path d="M4 7h.01M4 12h.01M4 17h.01"/></svg>
+        <span data-i="nav2">订单</span>
+      </button>
+      <button data-t="vehicles" onclick="tab('vehicles')">
+        <svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 13.5h18l-1.2-4.2A2 2 0 0 0 17.9 8H6.1a2 2 0 0 0-1.9 1.3L3 13.5Z"/><path d="M5 13.5V17a1 1 0 0 0 1 1h1.5a1 1 0 0 0 1-1v-.5h7V17a1 1 0 0 0 1 1H19a1 1 0 0 0 1-1v-3.5"/><circle cx="7.5" cy="16" r=".6"/><circle cx="16.5" cy="16" r=".6"/></svg>
+        <span data-i="nav3">车辆</span>
+      </button>
+      <button data-t="money" onclick="tab('money')">
+        <svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5h16v9H4z"/><path d="M4 10h16"/><path d="M12 13.5h.01"/></svg>
+        <span data-i="nav4">资金</span>
+      </button>
+      <button data-t="staff" onclick="tab('staff')">
+        <svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="2.5"/><path d="M4.5 18v-1.2A3.8 3.8 0 0 1 8.3 13h1.4a3.8 3.8 0 0 1 3.8 3.8V18"/><circle cx="16.5" cy="8.5" r="2"/><path d="M19.5 18v-.8A3 3 0 0 0 16.5 14h-.4"/></svg>
+        <span data-i="nav5">人</span>
+      </button>
+    </div>
+
+    <div class="toast" id="toast">已提醒</div>
+  </div>
+
+  <p class="hint" style="margin-top:10px">说明：以上均为<b>示例数据</b>，用于演示界面与流程；正式版数据由员工在微信里操作自动汇总。俄罗斯老板可切换俄语界面（Рус）。</p>
+</div>
+
+<script>
+var I18N = {
+  zh: { nav1:'概览', nav2:'订单', nav3:'车辆', nav4:'资金', nav5:'人',
+        stuck:'超时订单', stuckShort:'超时', inq:'询价', pay:'今日回款',
+        ovHead:'本月利润 22.0 万 · 超时订单 5 单', ovSub:'9/1–9/14 · 今日回款 ¥186 万 · 在途 21 台',
+        ovProfit:'本月利润', ovInflight:'在途台数', ovAction:'超时订单', ovActionSub:'按停留时长',
+        ovWatch:'今日关注', ovAlert:'提醒',
+        moreStuck:'还有 3 单超时 ›',
+        remind:'催办', remind2:'催办', remind3:'催办', remind4:'催办',
+        autoLog:'系统替你提醒（自动留痕）', files:'附件与档案', cust:'客户档案', supp:'供应商档案',
+        inflight:'在途订单 21 台', bystatus:'按状态', allorders:'订单明细', timeline:'全过程时间轴', auto:'自动记录',
+        stuckNow:'当前节点', progressFold:'进度', peopleFold:'人员',
+        money1:'本单资金', group:'关联群', backHome:'返回概览', ledger:'车辆台账',
+        month:'本月（9/1–9/14）', flowRecent:'近期流水', channels:'收款通道构成', perorder:'最近 4 单利润', rank:'成单排行',
+        staffAbn:'今日异常', staffQueue:'异常队列', today:'今天', daily:'日报 / 月报', archives:'档案',
+        rp:'奖惩（自动结算）', duty:'卫生轮值（本周）', leave:'请假与交接', notif:'今天的异常（系统替你盯）',
+        t_overview:'概览', t_orders:'订单', t_vehicles:'车辆', t_money:'资金', t_staff:'人',
+        t_detail:'订单详情', t_notifications:'通知', t_customers:'客户档案', t_suppliers:'供应商档案', t_settings:'设置',
+        settings:'设置', fs:'界面字号', fsHint:'手机上看得更清楚', langSet:'界面语言', alerts:'提醒设置', about:'关于' },
+  ru: { nav1:'Обзор', nav2:'Заказы', nav3:'Авто', nav4:'Финансы', nav5:'Сотрудники',
+        stuck:'Застряло', inq:'Запросы сегодня', pay:'Оплаты сегодня', stuckList:'Срочно сегодня', noscan:'По времени',
+        moreStuck:'Ещё 3 заказа ›',
+        remind:'Напомнить', remind2:'Напомнить', remind3:'Напомнить', remind4:'Напомнить',
+        autoLog:'Автонапоминания', files:'Файлы', cust:'Клиенты', supp:'Поставщики',
+        inflight:'В работе: 21', bystatus:'По статусу', allorders:'Заказы', timeline:'История заказа', auto:'Авто',
+        money1:'Деньги по заказу', group:'Группы WeChat', backHome:'К обзору', ledger:'Учёт автомобилей', vinrule:'По VIN',
+        month:'Сентябрь (1–14)', perorder:'Прибыль по заказам', rank:'Продажи за месяц', today:'Сегодня', daily:'Отчёты',
+        rp:'Штрафы и премии', duty:'Дежурство', leave:'Отпуска', notif:'Оповещения',
+        t_overview:'Обзор', t_orders:'Заказы', t_vehicles:'Авто', t_money:'Финансы', t_staff:'Сотрудники',
+        t_detail:'Заказ', t_notifications:'Оповещения', t_customers:'Клиенты', t_suppliers:'Поставщики', t_settings:'Настройки',
+        settings:'Настройки', fs:'Размер шрифта', fsHint:'Крупнее на телефоне', langSet:'Язык', alerts:'Оповещения', about:'О программе' }
+};
+var lang = 'zh';
+var track = ['overview'];
+var currentOrderId = 'l6';
+
+var ORDERS = {
+  l6: {
+    title: '理想 L6 · 2025款 Max', status: '进行中', meta: 'XLL260914-018 · Alex · 1 台',
+    step: '内勤换汇', subline: '停留 <b>2 天 3 小时</b> · 责任人 <b>波塔</b> · 已催 2 次',
+    remindName: '波塔', remindCar: '理想L6',
+    money: [['收（人民币）', '¥46.8万', ''], ['付（美金）', '$6.2万 · 未付', ''], ['预估利润', '≈ ¥6,500', 'color:#4A8B64']],
+    steps: [['done','询价'],['done','报价'],['done','锁单'],['done','付款'],['now','换汇'],['','出境']],
+    progressHint: '6 步摘要',
+    tl: [
+      ['done','询价中','9/11 09:12'],['done','已报价','9/11 09:38 · 26 分钟'],['done','意向确认','9/11 15:20'],
+      ['done','已锁单','9/12 10:05 · 张青昊'],['done','供应商合同已出','9/12 17:40'],['done','客户已付款','9/13 11:02 · VTB ¥46.8万'],
+      ['now','内勤已换汇','停留 2 天 3 小时 · 已催 2 次'],['todo','供应商已到账','待办 · 波塔'],['todo','许可证已出','待办'],
+      ['todo','外勤已验车','待办 · 那尔'],['todo','车辆已出境','待办'],['todo','订单完成','待办']
+    ],
+    groups: ['艾克启源 Q05问题解决群（11）','Бу авто & Ада авто（192）','XLL内部工作群（21）'],
+    files: [['供应商合同.pdf','已完成','g'],['客户水单.jpg','已完成','g'],['车辆许可证','待上传','w'],['验车视频','待上传','w']],
+    filesHint: '2/4',
+    roles: [['业务员','张青昊'],['内勤','波塔'],['外勤','那尔']],
+    cust: '客户档案 · Alex', supp: '供应商 · 艾克启源'
+  },
+  ford: {
+    title: 'Ford Transit Custom', status: '询价中', meta: 'XLL260914-022 · Alex · 需求询价',
+    step: '询价待回复', subline: '停留 <b>超时</b> · 责任人 <b>Nina</b> · 超 30 分钟未回',
+    remindName: 'Nina', remindCar: 'Ford Transit',
+    money: [['收（人民币）', '待报价', ''], ['付（美金）', '待锁单', ''], ['预估利润', '—', '']],
+    steps: [['now','询价'],['','报价'],['','锁单'],['','付款'],['','换汇'],['','出境']],
+    progressHint: '刚起步',
+    tl: [
+      ['now','询价中','今日 · 客户群已整理：2022-2023 / 2.0柴油 / CIP Ussury'],
+      ['todo','已报价','待办 · Nina（制度 30 分钟内）'],['todo','意向确认','待办'],['todo','已锁单','待办'],
+      ['todo','供应商合同已出','待办'],['todo','客户已付款','待办'],['todo','内勤已换汇','待办'],
+      ['todo','供应商已到账','待办'],['todo','许可证已出','待办'],['todo','外勤已验车','待办'],
+      ['todo','车辆已出境','待办'],['todo','订单完成','待办']
+    ],
+    groups: ['Бу авто & Ада авто（192）','XLL内部工作群（21）'],
+    files: [['询价需求摘要.txt','已整理','g'],['报价单','待出','w']],
+    filesHint: '1/2',
+    roles: [['业务员','Nina'],['内勤','—'],['外勤','—']],
+    cust: '客户档案 · Alex', supp: '供应商档案'
+  },
+  q05: {
+    title: '启源 Q05', status: '待验车', meta: 'XLL260913-011 · Yeldos · 1 台',
+    step: '外勤验车', subline: '停留 <b>1 天 5 小时</b> · 责任人 <b>那尔</b>',
+    remindName: '那尔', remindCar: '启源Q05',
+    money: [['收（人民币）', '¥19.8万', ''], ['付（美金）', '$2.5万 · 已付', ''], ['预估利润', '≈ ¥9,000', 'color:#4A8B64']],
+    steps: [['done','询价'],['done','报价'],['done','锁单'],['done','付款'],['done','换汇'],['now','出境']],
+    progressHint: '近出境',
+    tl: [
+      ['done','询价中','9/8'],['done','已报价','9/8'],['done','已锁单','9/9 · Nina'],['done','客户已付款','9/10'],
+      ['done','内勤已换汇','9/11'],['done','许可证已出','9/12'],['now','外勤已验车','停留 1 天 5 小时 · 那尔'],
+      ['todo','车辆已出境','待办'],['todo','订单完成','待办']
+    ],
+    groups: ['艾克启源 Q05问题解决群（11）','客户群 · Yeldos','XLL内部工作群（21）'],
+    files: [['供应商合同.pdf','已完成','g'],['客户水单.jpg','已完成','g'],['车辆许可证','已完成','g'],['验车视频','待上传','w']],
+    filesHint: '3/4',
+    roles: [['业务员','Nina'],['内勤','波塔'],['外勤','那尔']],
+    cust: '客户档案 · Yeldos', supp: '供应商 · 艾克启源'
+  },
+  su7: {
+    title: '小米 SU7', status: '换汇中', meta: 'XLL260914-019 · Bota · 1 台',
+    step: '内勤换汇', subline: '停留 <b>8 小时</b> · 责任人 <b>Nina</b>',
+    remindName: 'Nina', remindCar: '小米SU7',
+    money: [['收（人民币）', '¥31.5万', ''], ['付（美金）', '$4.1万 · 未付', ''], ['预估利润', '≈ ¥9,000', 'color:#4A8B64']],
+    steps: [['done','询价'],['done','报价'],['done','锁单'],['done','付款'],['now','换汇'],['','出境']],
+    progressHint: '6 步摘要',
+    tl: [
+      ['done','询价中','9/12'],['done','已报价','9/12'],['done','已锁单','9/13 · Nina'],['done','客户已付款','今日'],
+      ['now','内勤已换汇','停留 8 小时'],['todo','供应商已到账','待办'],['todo','许可证已出','待办'],
+      ['todo','外勤已验车','待办'],['todo','车辆已出境','待办'],['todo','订单完成','待办']
+    ],
+    groups: ['客户群 · Bota','XLL内部工作群（21）'],
+    files: [['供应商合同.pdf','已完成','g'],['客户水单.jpg','已完成','g'],['车辆许可证','待上传','w'],['验车视频','待上传','w']],
+    filesHint: '2/4',
+    roles: [['业务员','Nina'],['内勤','波塔'],['外勤','那尔']],
+    cust: '客户档案 · Bota', supp: '供应商档案'
+  },
+  x70: {
+    title: '捷途 X70L', status: '待出境', meta: 'XLL260912-007 · Yeldos · 1 台',
+    step: '车辆出境', subline: '口岸待放行 · 责任人 <b>Bota</b>',
+    remindName: 'Bota', remindCar: '捷途X70L',
+    money: [['收（人民币）', '¥28.6万', ''], ['付（美金）', '$3.7万 · 已付', ''], ['预估利润', '≈ ¥9,000', 'color:#4A8B64']],
+    steps: [['done','询价'],['done','报价'],['done','锁单'],['done','付款'],['done','换汇'],['now','出境']],
+    progressHint: '待出境',
+    tl: [
+      ['done','询价中','9/5'],['done','已锁单','9/7 · Bota'],['done','客户已付款','9/8'],['done','内勤已换汇','9/9'],
+      ['done','许可证已出','9/10'],['done','外勤已验车','9/11'],['now','车辆已出境','口岸待放行'],['todo','订单完成','待办']
+    ],
+    groups: ['深蓝出海～梁雪松','客户群 · Yeldos','XLL内部工作群（21）'],
+    files: [['供应商合同.pdf','已完成','g'],['客户水单.jpg','已完成','g'],['车辆许可证','已完成','g'],['验车视频','已完成','g']],
+    filesHint: '4/4',
+    roles: [['业务员','Bota'],['内勤','波塔'],['外勤','那尔']],
+    cust: '客户档案 · Yeldos', supp: '供应商 · 深蓝出海'
+  },
+  s07: {
+    title: '深蓝 S07', status: '询价中', meta: 'XLL260914-025 · 新询价',
+    step: '询价待回复', subline: '停留 <b>2 小时</b> · 责任人 <b>张青昊</b>',
+    remindName: '张青昊', remindCar: '深蓝S07',
+    money: [['收（人民币）', '待报价', ''], ['付（美金）', '待锁单', ''], ['预估利润', '—', '']],
+    steps: [['now','询价'],['','报价'],['','锁单'],['','付款'],['','换汇'],['','出境']],
+    progressHint: '刚起步',
+    tl: [
+      ['now','询价中','今日 14:10 · 张青昊已接单'],['todo','已报价','待办'],['todo','意向确认','待办'],
+      ['todo','已锁单','待办'],['todo','客户已付款','待办'],['todo','订单完成','待办']
+    ],
+    groups: ['XLL内部工作群（21）'],
+    files: [['询价需求','整理中','w']],
+    filesHint: '0/1',
+    roles: [['业务员','张青昊'],['内勤','—'],['外勤','—']],
+    cust: '客户档案', supp: '供应商档案'
+  }
+};
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderDetail(id) {
+  var o = ORDERS[id] || ORDERS.l6;
+  currentOrderId = ORDERS[id] ? id : 'l6';
+  document.getElementById('d-title').textContent = o.title;
+  document.getElementById('d-status').textContent = o.status;
+  document.getElementById('d-meta').textContent = o.meta;
+  document.getElementById('d-step').textContent = o.step;
+  document.getElementById('d-subline').innerHTML = o.subline;
+  var btn = document.getElementById('d-remind');
+  btn.dataset.name = o.remindName;
+  btn.dataset.car = o.remindCar;
+  btn.textContent = I18N[lang].remind2 || '催办';
+
+  document.getElementById('d-money').innerHTML = o.money.map(function (r) {
+    var style = r[2] ? ' style="' + r[2] + '"' : '';
+    return '<div class="r"><div class="who">' + esc(r[0]) + '</div><div class="car"' + style + '>' + esc(r[1]) + '</div></div>';
+  }).join('');
+
+  document.getElementById('d-progress-hint').textContent = o.progressHint;
+  document.getElementById('d-steps').innerHTML = o.steps.map(function (s) {
+    return '<i class="' + esc(s[0]) + '">' + esc(s[1]) + '</i>';
+  }).join('');
+  document.getElementById('d-tl').innerHTML = o.tl.map(function (t) {
+    return '<li class="' + esc(t[0]) + '"><div class="d"><i></i></div><div class="c"><b>' + esc(t[1]) + '</b><em>' + esc(t[2]) + '</em></div></li>';
+  }).join('');
+
+  document.getElementById('d-group-hint').textContent = o.groups.length + ' 个';
+  document.getElementById('d-groups').innerHTML = o.groups.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('');
+  document.getElementById('d-files-hint').textContent = o.filesHint;
+  document.getElementById('d-files').innerHTML = o.files.map(function (f) {
+    return '<div class="r"><div class="who">' + esc(f[0]) + '</div><div class="dur ' + esc(f[2]) + '">' + esc(f[1]) + '</div></div>';
+  }).join('');
+  document.getElementById('d-roles').innerHTML = o.roles.map(function (r) {
+    return '<div class="role-cell"><span class="role-l">' + esc(r[0]) + '</span><span class="role-n">' + esc(r[1]) + '</span></div>';
+  }).join('');
+  document.getElementById('d-cust-btn').textContent = o.cust;
+  document.getElementById('d-supp-btn').textContent = o.supp;
+
+  ['fold-progress','fold-group','fold-files','fold-people'].forEach(function (fid) {
+    var el = document.getElementById(fid);
+    if (el) el.classList.remove('open');
+  });
+}
+
+function openDetail(id) {
+  renderDetail(id);
+  go('detail');
+}
+
+function setLang(l) {
+  lang = l;
+  document.getElementById('lzh').classList.toggle('on', l === 'zh');
+  document.getElementById('lru').classList.toggle('on', l === 'ru');
+  document.querySelectorAll('[data-i]').forEach(function (el) {
+    var k = el.getAttribute('data-i'), v = I18N[l][k];
+    if (v) el.textContent = v;
+  });
+  document.querySelectorAll('[data-l]').forEach(function (b) { b.classList.toggle('on', b.dataset.l === l); });
+  document.getElementById('hdTitle').textContent = I18N[l]['t_' + track[track.length - 1]];
+  document.querySelectorAll('#nav button').forEach(function (b) {
+    b.classList.toggle('on', b.dataset.t === track[track.length - 1]);
+  });
+}
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(function (s) { s.classList.remove('on'); });
+  var el = document.getElementById('s-' + id);
+  if (el) el.classList.add('on');
+  document.querySelector('.body').scrollTop = 0;
+  document.getElementById('back').style.display = track.length > 1 ? 'flex' : 'none';
+  document.getElementById('bell').classList.toggle('on', id === 'notifications');
+  if (['overview', 'orders', 'vehicles', 'money', 'staff'].indexOf(id) >= 0) {
+    document.querySelectorAll('#nav button').forEach(function (b) { b.classList.toggle('on', b.dataset.t === id); });
+  }
+  document.getElementById('gear').classList.toggle('on', id === 'settings');
+  document.getElementById('hdTitle').textContent = I18N[lang]['t_' + id] || I18N[lang].t_overview;
+}
+
+function tab(name) { track = [name]; show(name); }
+function go(name) { track.push(name); show(name); }
+function back() { if (track.length > 1) { track.pop(); show(track[track.length - 1]); } }
+
+var orderFilter = 'all';
+
+function setOrderFilter(f) {
+  orderFilter = f;
+  document.querySelectorAll('#orderFilters button').forEach(function (b) {
+    b.classList.toggle('on', b.dataset.f === f);
+  });
+  document.querySelectorAll('#orderList .row-item').forEach(function (row) {
+    var tags = (row.dataset.f || '').split(/\s+/);
+    var show = f === 'all' || tags.indexOf(f) >= 0;
+    row.dataset.hidden = show ? '0' : '1';
+  });
+}
+
+function goOrdersStuck() {
+  tab('orders');
+  setOrderFilter('stuck');
+}
+
+function goOrdersInq() {
+  tab('orders');
+  setOrderFilter('inq');
+}
+
+function toggleFold(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+function toggleVehicle(id, e) {
+  if (e) e.stopPropagation();
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+var toast = document.getElementById('toast'), timer = null;
+function show2(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(timer);
+  timer = setTimeout(function () { toast.classList.remove('show'); }, 1900);
+}
+
+function setScale(v) {
+  document.documentElement.style.setProperty('--s', v);
+  try { localStorage.setItem('xll_fs', v); } catch (e) {}
+  document.querySelectorAll('#sizes button').forEach(function (b) { b.classList.toggle('on', b.dataset.s === String(v)); });
+}
+function sw(row) { var s = row.querySelector('.sw'); if (s) s.classList.toggle('on'); }
+(function initScale() {
+  var saved = null;
+  try { saved = localStorage.getItem('xll_fs'); } catch (e) {}
+  setScale(saved || '1.3');
+})();
+
+var sent = {};
+function bindAdmin(b) {
+  if (b.dataset.bound) return;
+  b.dataset.bound = '1';
+  b.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var n = b.dataset.name, c = b.dataset.car, k = n + c;
+    if (!n) return;
+    sent[k] = (sent[k] || 0) + 1;
+    var d = new Date(), hh = String(d.getHours()).padStart(2, '0'), mm = String(d.getMinutes()).padStart(2, '0');
+    show2('已提醒 ' + n + '（第 ' + sent[k] + ' 次）· ' + hh + ':' + mm);
+    b.textContent = '已发(' + sent[k] + ')';
+  });
+}
+document.querySelectorAll('.admin').forEach(bindAdmin);
+renderDetail('l6');
+
+document.getElementById('bell').addEventListener('click', function () { go('notifications'); });
+</script>
+</body>
+</html>
