@@ -410,26 +410,40 @@ function action(name, orderId) {
 }
 
 function primaryAction(o) {
-  if (role === 'Nina' || role === '张青昊') {
+  if (!o || o.owner !== role) return null;
+  if ((role === 'Nina' || role === '张青昊') && o.assignee.sales === role) {
     if (o.phase === 'inquiry' && !o.accepted) return { act: 'accept', label: t('actAccept') };
     if (o.phase === 'inquiry') return { act: 'quote', label: t('actQuote') };
+    if (o.phase === 'quoted') return { act: 'lock', label: t('actLock') };
   }
-  if (role === '波塔' && o.phase === 'fx') return { act: 'fx_done', label: t('actFx') };
-  if (role === '那尔' && o.phase === 'inspect') return { act: 'inspect_done', label: t('actInspect') };
+  if (role === '波塔' && o.phase === 'fx' && o.assignee.office === role) {
+    return { act: 'fx_done', label: t('actFx') };
+  }
+  if (role === '那尔' && o.phase === 'inspect' && o.assignee.field === role) {
+    if (!o.videoUploaded) return { act: 'upload_video', label: t('actUploadVideo') };
+    return { act: 'inspect_done', label: t('actInspect') };
+  }
   return null;
+}
+
+function isSalesRole() {
+  return role === 'Nina' || role === '张青昊';
 }
 
 function rowHtml(o, withBtn) {
   var pa = withBtn ? primaryAction(o) : null;
   var cls = o.stuck ? 'row-item' : 'row-item w';
-  if (!o.stuck && (o.phase === 'quoted' || o.phase === 'license' || o.phase === 'exit')) cls = 'row-item g';
+  if (!o.stuck && (o.phase === 'quoted' || o.phase === 'locked' || o.phase === 'license' || o.phase === 'exit')) cls = 'row-item g';
   var btn = pa
     ? '<button type="button" class="btn-sm" onclick="event.stopPropagation();action(\'' + pa.act + '\',\'' + o.id + '\')">' + pa.label + '</button>'
     : '';
+  var meta = tr(o.stepShort) + ' · ' + o.owner;
+  if (o.phase === 'inspect' && !o.videoUploaded) meta += ' · ' + t('videoPending');
+  if (o.phase === 'inspect' && o.videoUploaded) meta += ' · ' + t('videoDone');
   return '<div class="' + cls + '">' +
     '<div class="row-main" onclick="openDetail(\'' + o.id + '\')">' +
       '<div class="r"><div class="car">' + o.title + '</div><div class="dur">' + tr(o.dur) + '</div></div>' +
-      '<div class="meta">' + tr(o.stepShort) + ' · ' + o.owner + '</div>' +
+      '<div class="meta">' + meta + '</div>' +
     '</div>' + btn + '</div>';
 }
 
@@ -447,34 +461,42 @@ function renderTodo(state) {
 
 function renderMine(state) {
   var list = XLLStore.myOrders(state, role);
-  var html = '<div class="sect"><span>' + t('myOrders') + '</span><span>' + t('ordersN', { n: list.length }) + '</span></div><div class="row-list">';
+  var html = '<div class="sect"><span>' + t('myOrders') + '</span><span>' + t('ordersN', { n: list.length }) + '</span></div>';
+  html += '<div class="who" style="margin:-2px 0 8px">' + t('myOrdersHint') + '</div><div class="row-list">';
   if (!list.length) html += '<div class="empty">' + t('emptyMine') + '</div>';
-  else list.forEach(function (o) { html += rowHtml(o, true); });
+  else list.forEach(function (o) { html += rowHtml(o, false); });
   html += '</div>';
   document.getElementById('s-mine').innerHTML = html;
 }
 
 function renderCheck(state) {
-  var done = !!(state.daily && state.daily[role]);
-  var isSales = role === 'Nina' || role === '张青昊';
-  var html = '<div class="sect"><span>' + t('todayCheck') + '</span></div><div class="card">';
-  if (isSales) {
-    html += '<div class="car" style="font-size:0.875em">' + t('dailyTitle') + '</div>' +
+  var html = '<div class="sect"><span>' + t('todayCheck') + '</span></div>';
+  if (isSalesRole()) {
+    var done = !!(state.dailyReport && state.dailyReport[role]);
+    html += '<div class="card"><div class="car" style="font-size:0.875em">' + t('dailyTitle') + '</div>' +
       '<div class="who" style="margin-top:6px">' + t('dailyHint') + '</div>';
-    if (done) html += '<button type="button" class="btn ghost" disabled>' + t('dailyDone') + '</button>';
-    else html += '<button type="button" class="btn" onclick="action(\'daily\')">' + t('dailySubmit') + '</button>';
+    html += done
+      ? '<button type="button" class="btn ghost" disabled>' + t('dailyDone') + '</button>'
+      : '<button type="button" class="btn" onclick="action(\'daily_report\')">' + t('dailySubmit') + '</button>';
+    html += '</div>';
   } else if (role === '波塔') {
-    html += '<div class="car" style="font-size:0.875em">' + t('officeCheck') + '</div><div class="who" style="margin-top:6px">' + t('officeHint') + '</div>';
-    html += done
+    var cin = !!(state.checkIn && state.checkIn[role]);
+    html += '<div class="card"><div class="car" style="font-size:0.875em">' + t('officeCheck') + '</div>' +
+      '<div class="who" style="margin-top:6px">' + t('officeHint') + '</div>';
+    html += cin
       ? '<button type="button" class="btn ghost" disabled>' + t('officeDone') + '</button>'
-      : '<button type="button" class="btn" onclick="action(\'daily\')">' + t('officeGo') + '</button>';
-  } else {
-    html += '<div class="car" style="font-size:0.875em">' + t('fieldCheck') + '</div><div class="who" style="margin-top:6px">' + t('fieldHint') + '</div>';
-    html += done
+      : '<button type="button" class="btn" onclick="action(\'check_in\')">' + t('officeGo') + '</button>';
+    html += '</div>';
+  } else if (role === '那尔') {
+    var fr = !!(state.fieldReport && state.fieldReport[role]);
+    html += '<div class="card"><div class="car" style="font-size:0.875em">' + t('fieldCheck') + '</div>' +
+      '<div class="who" style="margin-top:6px">' + t('fieldHint') + '</div>';
+    html += fr
       ? '<button type="button" class="btn ghost" disabled>' + t('fieldDone') + '</button>'
-      : '<button type="button" class="btn" onclick="action(\'daily\')">' + t('fieldGo') + '</button>';
+      : '<button type="button" class="btn" onclick="action(\'field_report\')">' + t('fieldGo') + '</button>';
+    html += '</div>';
   }
-  html += '</div><button type="button" class="btn ghost" onclick="var r=XLLStore.applyAction(\'reset\');showToast(tr(r.toast));render();">' + t('resetDemo') + '</button>';
+  html += '<button type="button" class="btn ghost" onclick="var r=XLLStore.applyAction(\'reset\',{});showToast(tr(r.toast));render();">' + t('resetDemo') + '</button>';
   html += '<div class="who" style="margin-top:10px;text-align:center">' + t('syncHint') + '</div>';
   document.getElementById('s-check').innerHTML = html;
 }
@@ -503,11 +525,15 @@ function renderDetail(state) {
     '<div class="sect"><span>' + t('stuckNow') + '</span></div>' +
     '<div class="focus-card"><div class="step">' + tr(o.step) + '</div><div class="subline">' + tr(o.subline) + '</div></div>';
   if (pa) html += '<button type="button" class="btn" onclick="action(\'' + pa.act + '\',\'' + detailId + '\')">' + pa.label + '</button>';
-  html += '<div class="sect"><span>' + t('money1') + '</span></div><div class="card">';
-  (o.money || []).forEach(function (r) {
-    html += '<div class="r" style="margin-top:6px"><div class="who">' + tr(r[0]) + '</div><div class="car"' + (r[2] ? ' style="' + r[2] + '"' : '') + '>' + tr(r[1]) + '</div></div>';
-  });
-  html += '</div>';
+  if (!isSalesRole()) {
+    html += '<div class="sect"><span>' + t('money1') + '</span></div><div class="card">';
+    (o.money || []).forEach(function (r) {
+      html += '<div class="r" style="margin-top:6px"><div class="who">' + tr(r[0]) + '</div><div class="car"' + (r[2] ? ' style="' + r[2] + '"' : '') + '>' + tr(r[1]) + '</div></div>';
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="who" style="margin-top:8px">' + t('salesDetailHint') + '</div>';
+  }
   document.getElementById('s-detail').innerHTML = html;
 }
 
